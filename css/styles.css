@@ -526,10 +526,11 @@ body.dark-mode #menu-toggle {
 
 /* Retroactive Buttons in Stats */
 .retro-buttons {
+    grid-column: span 2;
     display: flex;
     flex-direction: row;
     gap: 12px;
-    margin-top: 20px;
+    margin-top: 10px;
     padding-bottom: calc(var(--safe-area-bottom) + 30px);
 }
 
