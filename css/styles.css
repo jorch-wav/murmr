@@ -690,6 +690,125 @@ body.dark-mode .retro-btn {
     color: #fff;
 }
 
+/* Logs Section */
+.logs-section {
+    grid-column: span 2;
+    background: rgba(255,255,255,0.4);
+    border-radius: 16px;
+    padding: 15px;
+    margin-top: 5px;
+}
+
+.logs-section h3 {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #666;
+    margin-bottom: 12px;
+}
+
+.logs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.log-item {
+    display: flex;
+    align-items: center;
+    background: rgba(255,255,255,0.6);
+    border-radius: 10px;
+    padding: 12px;
+    position: relative;
+    overflow: hidden;
+    touch-action: pan-y;
+}
+
+.log-item-content {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.log-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.log-item-date {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.log-item-time {
+    font-size: 11px;
+    color: #666;
+}
+
+.log-item-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.log-item-delete {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 70px;
+    background: #f87171;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    transform: translateX(100%);
+    transition: transform 0.2s ease;
+}
+
+.log-item.swiped .log-item-delete {
+    transform: translateX(0);
+}
+
+.log-item.swiped .log-item-content {
+    transform: translateX(-70px);
+    transition: transform 0.2s ease;
+}
+
+.logs-empty {
+    text-align: center;
+    color: #888;
+    font-size: 13px;
+    padding: 20px;
+}
+
+body.dark-mode .logs-section {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .logs-section h3 {
+    color: #aaa;
+}
+
+body.dark-mode .log-item {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .log-item-date,
+body.dark-mode .log-item-value {
+    color: #fff;
+}
+
+body.dark-mode .log-item-time {
+    color: #aaa;
+}
+
 /* Animations */
 @keyframes scatter {
     0% { transform: scale(1); }

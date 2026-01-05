@@ -367,10 +367,14 @@ class Murmuration {
     
     initBirds() {
         const geometry = new BirdGeometry(this.BIRDS, this.WIDTH);
+        
+        // Check if dark mode is active
+        const isDark = document.body.classList.contains('dark-mode');
+        const birdColorValue = isDark ? new THREE.Vector3(0.9, 0.9, 0.9) : new THREE.Vector3(0.0, 0.0, 0.0);
 
         this.birdUniforms = {
             'color': { value: new THREE.Color(0x000000) },
-            'birdColor': { value: new THREE.Vector3(0.0, 0.0, 0.0) },
+            'birdColor': { value: birdColorValue },
             'texturePosition': { value: null },
             'textureVelocity': { value: null },
             'time': { value: 1.0 },

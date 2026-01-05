@@ -206,6 +206,47 @@ class MurmrStorage {
         return expenses.find(e => e.timestamp === timestamp);
     }
     
+    // Delete session by index
+    deleteSession(index) {
+        const sessions = this.getSessions();
+        if (index >= 0 && index < sessions.length) {
+            sessions.splice(index, 1);
+            this.saveSessions(sessions);
+        }
+    }
+    
+    // Update session at index
+    updateSession(index, timestamp) {
+        const sessions = this.getSessions();
+        if (index >= 0 && index < sessions.length) {
+            sessions[index].timestamp = timestamp;
+            sessions.sort((a, b) => a.timestamp - b.timestamp);
+            this.saveSessions(sessions);
+        }
+    }
+    
+    // Delete expense by index
+    deleteExpense(index) {
+        const expenses = this.getExpenses();
+        if (index >= 0 && index < expenses.length) {
+            expenses.splice(index, 1);
+            this.saveExpenses(expenses);
+        }
+    }
+    
+    // Update expense at index
+    updateExpense(index, timestamp, amount, quantity, note) {
+        const expenses = this.getExpenses();
+        if (index >= 0 && index < expenses.length) {
+            expenses[index].timestamp = timestamp;
+            expenses[index].amount = parseFloat(amount) || 0;
+            expenses[index].quantity = parseFloat(quantity) || 1;
+            expenses[index].note = note.trim();
+            expenses.sort((a, b) => a.timestamp - b.timestamp);
+            this.saveExpenses(expenses);
+        }
+    }
+
     getExpensesInRange(startTime, endTime) {
         const expenses = this.getExpenses();
         return expenses.filter(e => e.timestamp >= startTime && e.timestamp <= endTime);

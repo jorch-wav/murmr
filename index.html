@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#87CEEB">
     <title>MURMR</title>
-    <link rel="stylesheet" href="css/styles.css?v=30">
+    <link rel="stylesheet" href="css/styles.css?v=31">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <!-- Three.js for 3D murmuration -->
@@ -253,7 +253,7 @@
             </div>
             <div id="time-display">
                 <span id="elapsed-time">0:00:00</span>
-                <span class="label">smoke-free</span>
+                <span class="label">streak</span>
             </div>
         </div>
         <!-- Menu toggle button -->
@@ -329,6 +329,16 @@
                     <span class="icon pixel-coin"></span>
                     <span class="text">Add Expense Retroactively</span>
                 </button>
+            </div>
+            
+            <!-- Logs List -->
+            <div class="logs-section">
+                <h3>Session History</h3>
+                <div id="session-logs" class="logs-list"></div>
+            </div>
+            <div class="logs-section">
+                <h3>Expense History</h3>
+                <div id="expense-logs" class="logs-list"></div>
             </div>
         </div>
     </div>
@@ -409,9 +419,9 @@
         </div>
     </div>
 
-    <script src="js/storage.js?v=29"></script>
-    <script src="js/murmuration.js?v=29"></script>
-    <script src="js/stats.js?v=29"></script>
-    <script src="js/app.js?v=29"></script>
+    <script src="js/storage.js?v=31"></script>
+    <script src="js/murmuration.js?v=31"></script>
+    <script src="js/stats.js?v=31"></script>
+    <script src="js/app.js?v=31"></script>
 </body>
 </html>

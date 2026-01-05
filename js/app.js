@@ -161,6 +161,11 @@ class MurmrApp {
         document.getElementById('retro-session-modal').classList.remove('active');
         document.getElementById('retro-expense-modal').classList.remove('active');
         
+        // Clear editing state
+        if (this.statsView) {
+            this.statsView.editingLog = null;
+        }
+        
         // Clear inputs
         document.getElementById('expense-amount').value = '';
         document.getElementById('expense-quantity').value = '1';
@@ -211,8 +216,15 @@ class MurmrApp {
         
         const timestamp = new Date(`${dateStr}T${timeStr}`).getTime();
         
-        // Add session at specific timestamp
-        this.storage.logSessionAt(timestamp);
+        // Check if we're editing an existing session
+        if (this.statsView.editingLog && this.statsView.editingLog.type === 'session') {
+            this.storage.updateSession(this.statsView.editingLog.index, timestamp);
+            this.statsView.editingLog = null;
+        } else {
+            // Add session at specific timestamp
+            this.storage.logSessionAt(timestamp);
+        }
+        
         this.hideModals();
         this.statsView.update();
         this.updateDisplay();
@@ -237,8 +249,15 @@ class MurmrApp {
         
         const timestamp = new Date(`${dateStr}T${timeStr}`).getTime();
         
-        // Add expense at specific timestamp
-        this.storage.logExpenseAt(timestamp, amount, quantity, note);
+        // Check if we're editing an existing expense
+        if (this.statsView.editingLog && this.statsView.editingLog.type === 'expense') {
+            this.storage.updateExpense(this.statsView.editingLog.index, timestamp, amount, quantity, note);
+            this.statsView.editingLog = null;
+        } else {
+            // Add expense at specific timestamp
+            this.storage.logExpenseAt(timestamp, amount, quantity, note);
+        }
+        
         this.hideModals();
         this.statsView.update();
         this.updateDisplay();

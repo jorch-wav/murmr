@@ -15,6 +15,9 @@ class StatsView {
     
     init() {
         this.chartCtx = document.getElementById('stats-chart');
+        this.sessionLogsContainer = document.getElementById('session-logs');
+        this.expenseLogsContainer = document.getElementById('expense-logs');
+        this.editingLog = null;
         this.bindEvents();
     }
     
@@ -77,6 +80,171 @@ class StatsView {
         
         // Render chart
         this.renderChart(stats.chartData);
+        
+        // Render logs
+        this.renderSessionLogs();
+        this.renderExpenseLogs();
+    }
+    
+    renderSessionLogs() {
+        const sessions = this.storage.getSessions();
+        const container = this.sessionLogsContainer;
+        
+        if (!container) return;
+        
+        if (sessions.length === 0) {
+            container.innerHTML = '<div class="logs-empty">No sessions logged yet</div>';
+            return;
+        }
+        
+        // Show last 10 sessions, most recent first
+        const recentSessions = sessions.slice(-10).reverse();
+        
+        container.innerHTML = recentSessions.map((session, displayIndex) => {
+            const date = new Date(session.timestamp);
+            const realIndex = sessions.length - 1 - displayIndex;
+            return `
+                <div class="log-item" data-type="session" data-index="${realIndex}">
+                    <div class="log-item-content">
+                        <div class="log-item-info">
+                            <span class="log-item-date">${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                            <span class="log-item-time">${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
+                        </div>
+                        <span class="log-item-value">Session</span>
+                    </div>
+                    <div class="log-item-delete">Delete</div>
+                </div>
+            `;
+        }).join('');
+        
+        this.bindLogItemEvents(container, 'session');
+    }
+    
+    renderExpenseLogs() {
+        const expenses = this.storage.getExpenses();
+        const container = this.expenseLogsContainer;
+        
+        if (!container) return;
+        
+        if (expenses.length === 0) {
+            container.innerHTML = '<div class="logs-empty">No expenses logged yet</div>';
+            return;
+        }
+        
+        // Show last 10 expenses, most recent first
+        const recentExpenses = expenses.slice(-10).reverse();
+        
+        container.innerHTML = recentExpenses.map((expense, displayIndex) => {
+            const date = new Date(expense.timestamp);
+            const realIndex = expenses.length - 1 - displayIndex;
+            return `
+                <div class="log-item" data-type="expense" data-index="${realIndex}">
+                    <div class="log-item-content">
+                        <div class="log-item-info">
+                            <span class="log-item-date">${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                            <span class="log-item-time">${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}${expense.note ? ' - ' + expense.note : ''}</span>
+                        </div>
+                        <span class="log-item-value">$${expense.amount.toFixed(2)}</span>
+                    </div>
+                    <div class="log-item-delete">Delete</div>
+                </div>
+            `;
+        }).join('');
+        
+        this.bindLogItemEvents(container, 'expense');
+    }
+    
+    bindLogItemEvents(container, type) {
+        container.querySelectorAll('.log-item').forEach(item => {
+            let startX = 0;
+            let currentX = 0;
+            let isSwiping = false;
+            
+            // Touch events for swipe
+            item.addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+                isSwiping = false;
+                item.classList.remove('swiped');
+            }, { passive: true });
+            
+            item.addEventListener('touchmove', (e) => {
+                currentX = e.touches[0].clientX;
+                const deltaX = startX - currentX;
+                
+                if (deltaX > 30) {
+                    isSwiping = true;
+                    item.classList.add('swiped');
+                } else if (deltaX < -30) {
+                    item.classList.remove('swiped');
+                }
+            }, { passive: true });
+            
+            item.addEventListener('touchend', () => {
+                if (!isSwiping) {
+                    // Tap - edit
+                    this.editLogItem(type, parseInt(item.dataset.index));
+                }
+            });
+            
+            // Delete button click
+            const deleteBtn = item.querySelector('.log-item-delete');
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.deleteLogItem(type, parseInt(item.dataset.index));
+            });
+        });
+    }
+    
+    editLogItem(type, index) {
+        if (type === 'session') {
+            const sessions = this.storage.getSessions();
+            const session = sessions[index];
+            if (!session) return;
+            
+            const date = new Date(session.timestamp);
+            document.getElementById('retro-session-date').value = date.toISOString().split('T')[0];
+            document.getElementById('retro-session-time').value = date.toTimeString().slice(0, 5);
+            
+            // Store edit state
+            this.editingLog = { type: 'session', index };
+            
+            // Show modal
+            document.getElementById('modal-overlay').classList.add('visible');
+            document.getElementById('retro-session-modal').classList.add('active');
+        } else {
+            const expenses = this.storage.getExpenses();
+            const expense = expenses[index];
+            if (!expense) return;
+            
+            const date = new Date(expense.timestamp);
+            document.getElementById('retro-expense-date').value = date.toISOString().split('T')[0];
+            document.getElementById('retro-expense-time').value = date.toTimeString().slice(0, 5);
+            document.getElementById('retro-expense-amount').value = expense.amount;
+            document.getElementById('retro-expense-quantity').value = expense.quantity || 1;
+            document.getElementById('retro-expense-note').value = expense.note || '';
+            
+            // Store edit state
+            this.editingLog = { type: 'expense', index };
+            
+            // Show modal
+            document.getElementById('modal-overlay').classList.add('visible');
+            document.getElementById('retro-expense-modal').classList.add('active');
+        }
+    }
+    
+    deleteLogItem(type, index) {
+        if (confirm('Delete this log entry?')) {
+            if (type === 'session') {
+                this.storage.deleteSession(index);
+            } else {
+                this.storage.deleteExpense(index);
+            }
+            this.update();
+            // Also update the main display
+            if (window.murmrApp) {
+                window.murmrApp.updateDisplay();
+            }
+        }
     }
     
     renderChart(data) {
