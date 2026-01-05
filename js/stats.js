@@ -15,8 +15,7 @@ class StatsView {
     
     init() {
         this.chartCtx = document.getElementById('stats-chart');
-        this.sessionLogsContainer = document.getElementById('session-logs');
-        this.expenseLogsContainer = document.getElementById('expense-logs');
+        this.historyLogsContainer = document.getElementById('history-logs');
         this.editingLog = null;
         this.bindEvents();
     }
@@ -81,84 +80,77 @@ class StatsView {
         // Render chart
         this.renderChart(stats.chartData);
         
-        // Render logs
-        this.renderSessionLogs();
-        this.renderExpenseLogs();
+        // Render combined history
+        this.renderHistory();
     }
     
-    renderSessionLogs() {
+    renderHistory() {
         const sessions = this.storage.getSessions();
-        const container = this.sessionLogsContainer;
-        
-        if (!container) return;
-        
-        if (sessions.length === 0) {
-            container.innerHTML = '<div class="logs-empty">No sessions logged yet</div>';
-            return;
-        }
-        
-        // Show last 10 sessions, most recent first
-        const recentSessions = sessions.slice(-10).reverse();
-        
-        container.innerHTML = recentSessions.map((session, displayIndex) => {
-            const date = new Date(session.timestamp);
-            const realIndex = sessions.length - 1 - displayIndex;
-            return `
-                <div class="log-item" data-type="session" data-index="${realIndex}">
-                    <div class="log-item-content">
-                        <div class="log-item-info">
-                            <span class="log-item-date">${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                            <span class="log-item-time">${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
-                        </div>
-                        <span class="log-item-value">Session</span>
-                    </div>
-                    <div class="log-item-delete">Delete</div>
-                </div>
-            `;
-        }).join('');
-        
-        this.bindLogItemEvents(container, 'session');
-    }
-    
-    renderExpenseLogs() {
         const expenses = this.storage.getExpenses();
-        const container = this.expenseLogsContainer;
+        const container = this.historyLogsContainer;
         
         if (!container) return;
         
-        if (expenses.length === 0) {
-            container.innerHTML = '<div class="logs-empty">No expenses logged yet</div>';
+        // Combine sessions and expenses with type marker
+        const allItems = [
+            ...sessions.map((s, idx) => ({ ...s, type: 'session', originalIndex: idx })),
+            ...expenses.map((e, idx) => ({ ...e, type: 'expense', originalIndex: idx }))
+        ];
+        
+        // Sort by timestamp descending (most recent first)
+        allItems.sort((a, b) => b.timestamp - a.timestamp);
+        
+        // Take latest 20
+        const recentItems = allItems.slice(0, 20);
+        
+        if (recentItems.length === 0) {
+            container.innerHTML = '<div class="logs-empty">No history yet</div>';
             return;
         }
         
-        // Show last 10 expenses, most recent first
-        const recentExpenses = expenses.slice(-10).reverse();
-        
-        container.innerHTML = recentExpenses.map((expense, displayIndex) => {
-            const date = new Date(expense.timestamp);
-            const realIndex = expenses.length - 1 - displayIndex;
-            return `
-                <div class="log-item" data-type="expense" data-index="${realIndex}">
-                    <div class="log-item-content">
-                        <div class="log-item-info">
-                            <span class="log-item-date">${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                            <span class="log-item-time">${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}${expense.note ? ' - ' + expense.note : ''}</span>
+        container.innerHTML = recentItems.map(item => {
+            const date = new Date(item.timestamp);
+            const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            
+            if (item.type === 'session') {
+                return `
+                    <div class="log-item log-session" data-type="session" data-index="${item.originalIndex}">
+                        <div class="log-item-content">
+                            <div class="log-item-info">
+                                <span class="log-item-date">${dateStr}</span>
+                                <span class="log-item-time">${timeStr}</span>
+                            </div>
+                            <span class="log-item-value log-type-session">Session</span>
                         </div>
-                        <span class="log-item-value">$${expense.amount.toFixed(2)}</span>
+                        <div class="log-item-delete">Delete</div>
                     </div>
-                    <div class="log-item-delete">Delete</div>
-                </div>
-            `;
+                `;
+            } else {
+                return `
+                    <div class="log-item log-expense" data-type="expense" data-index="${item.originalIndex}">
+                        <div class="log-item-content">
+                            <div class="log-item-info">
+                                <span class="log-item-date">${dateStr}</span>
+                                <span class="log-item-time">${timeStr}${item.note ? ' · ' + item.note : ''}</span>
+                            </div>
+                            <span class="log-item-value log-type-expense">$${item.amount.toFixed(2)}</span>
+                        </div>
+                        <div class="log-item-delete">Delete</div>
+                    </div>
+                `;
+            }
         }).join('');
         
-        this.bindLogItemEvents(container, 'expense');
+        this.bindLogItemEvents(container);
     }
     
-    bindLogItemEvents(container, type) {
+    bindLogItemEvents(container) {
         container.querySelectorAll('.log-item').forEach(item => {
             let startX = 0;
             let currentX = 0;
             let isSwiping = false;
+            const type = item.dataset.type;
             
             // Touch events for swipe
             item.addEventListener('touchstart', (e) => {

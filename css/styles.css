@@ -597,6 +597,9 @@ body.dark-mode #menu-toggle {
     outline: none;
     transition: background-color 0.2s ease;
     text-align: center;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    appearance: none;
 }
 
 .input-group input:focus {
@@ -786,6 +789,16 @@ body.dark-mode .retro-btn {
     color: #888;
     font-size: 13px;
     padding: 20px;
+}
+
+.log-type-session {
+    color: #f87171;
+    font-weight: 500;
+}
+
+.log-type-expense {
+    color: #4ade80;
+    font-weight: 600;
 }
 
 body.dark-mode .logs-section {
