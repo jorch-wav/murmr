@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#87CEEB">
     <title>MURMR</title>
-    <link rel="stylesheet" href="css/styles.css?v=35">
+    <link rel="stylesheet" href="css/styles.css?v=36">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <!-- Three.js for 3D murmuration -->
@@ -237,13 +237,16 @@
 
     <!-- Bird Fragment Shader -->
     <script type="x-shader/x-fragment" id="birdFS">
+        uniform float colorMode;
         uniform vec3 birdColor;
         varying vec4 vColor;
         varying float z;
 
         void main() {
             float depth = ( 1000. - z ) / 1000.;
-            gl_FragColor = vec4( birdColor, 1. );
+            // Mix between uniform color (monochrome) and per-bird color (rainbow cohorts)
+            vec3 finalColor = mix(birdColor, vColor.rgb, colorMode);
+            gl_FragColor = vec4( finalColor, 1. );
         }
     </script>
 </head>
@@ -286,6 +289,10 @@
         <button id="toggle-theme-btn" class="log-btn theme">
             <span class="icon pixel-moon"></span>
             <span class="text">Dark Mode</span>
+        </button>
+        <button id="toggle-color-btn" class="log-btn color">
+            <span class="icon">🌈</span>
+            <span class="text">Color Mode</span>
         </button>
     </div>
 
@@ -420,9 +427,9 @@
         </div>
     </div>
 
-    <script src="js/storage.js?v=35"></script>
-    <script src="js/murmuration.js?v=35"></script>
-    <script src="js/stats.js?v=35"></script>
-    <script src="js/app.js?v=35"></script>
+    <script src="js/storage.js?v=36"></script>
+    <script src="js/murmuration.js?v=36"></script>
+    <script src="js/stats.js?v=36"></script>
+    <script src="js/app.js?v=36"></script>
 </body>
 </html>

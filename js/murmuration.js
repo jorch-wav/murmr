@@ -192,7 +192,7 @@ class GPUComputationRenderer {
 // Bird Geometry - 3 triangles per bird with flapping wings
 // =====================================================
 class BirdGeometry extends THREE.BufferGeometry {
-    constructor(birdCount, width) {
+    constructor(birdCount, width, cohortColors = null) {
         super();
 
         const trianglesPerBird = 3;
@@ -233,7 +233,14 @@ class BirdGeometry extends THREE.BufferGeometry {
             const x = (birdIndex % width) / width;
             const y = ~~(birdIndex / width) / width;
 
-            const c = new THREE.Color(0x000000);
+            // Use cohort color if provided, otherwise black
+            let c;
+            if (cohortColors && cohortColors.length > 0) {
+                const cohortIndex = birdIndex % cohortColors.length;
+                c = cohortColors[cohortIndex];
+            } else {
+                c = new THREE.Color(0x000000);
+            }
 
             birdColors.array[vi * 3 + 0] = c.r;
             birdColors.array[vi * 3 + 1] = c.g;
@@ -265,6 +272,23 @@ class Murmuration {
         // State
         this.targetBirdCount = 1;
         this.last = performance.now();
+        this.colorMode = localStorage.getItem('murmr_color_mode') === 'true';
+        
+        // Color palette for cohorts (12 rainbow colors)
+        this.cohortColors = [
+            new THREE.Color(0xff6b6b), // coral red
+            new THREE.Color(0xffa94d), // orange
+            new THREE.Color(0xffd43b), // yellow
+            new THREE.Color(0x69db7c), // green
+            new THREE.Color(0x38d9a9), // teal
+            new THREE.Color(0x4dabf7), // sky blue
+            new THREE.Color(0x748ffc), // indigo
+            new THREE.Color(0x9775fa), // purple
+            new THREE.Color(0xda77f2), // violet
+            new THREE.Color(0xf783ac), // pink
+            new THREE.Color(0xff8787), // light red
+            new THREE.Color(0x63e6be), // mint
+        ];
         
         // Touch/Mouse
         this.mouseX = 10000;
@@ -367,7 +391,9 @@ class Murmuration {
     }
     
     initBirds() {
-        const geometry = new BirdGeometry(this.BIRDS, this.WIDTH);
+        // Generate cohort colors for each bird based on streak time
+        const cohortColorsForBirds = this.generateCohortColorsForBirds(this.BIRDS);
+        const geometry = new BirdGeometry(this.BIRDS, this.WIDTH, cohortColorsForBirds);
         
         // Check if dark mode is active
         const isDark = document.body.classList.contains('dark-mode');
@@ -376,6 +402,7 @@ class Murmuration {
         this.birdUniforms = {
             'color': { value: new THREE.Color(0x000000) },
             'birdColor': { value: birdColorValue },
+            'colorMode': { value: this.colorMode ? 1.0 : 0.0 },
             'texturePosition': { value: null },
             'textureVelocity': { value: null },
             'time': { value: 1.0 },
@@ -395,6 +422,34 @@ class Murmuration {
         this.birdMesh.updateMatrix();
 
         this.scene.add(this.birdMesh);
+    }
+    
+    // Generate cohort colors for each bird
+    // Under 24h: hourly cohorts (10 birds/hour)
+    // Over 24h: daily cohorts (240 birds/day)
+    generateCohortColorsForBirds(birdCount) {
+        const colors = [];
+        const streakMs = this.getStreakDuration();
+        const streakHours = streakMs / (1000 * 60 * 60);
+        const isOverDay = streakHours >= 24;
+        
+        // Birds per cohort: 10 per hour, or 240 per day (10 * 24)
+        const birdsPerCohort = isOverDay ? 240 : 10;
+        
+        for (let i = 0; i < birdCount; i++) {
+            // Assign color based on which cohort this bird belongs to
+            const cohortIndex = Math.floor(i / birdsPerCohort) % this.cohortColors.length;
+            colors.push(this.cohortColors[cohortIndex]);
+        }
+        
+        return colors;
+    }
+    
+    // Get streak duration from storage
+    getStreakDuration() {
+        const streakStart = localStorage.getItem('murmr_streak_start');
+        if (!streakStart) return 0;
+        return Date.now() - parseInt(streakStart, 10);
     }
     
     fillPositionTexture(texture) {
@@ -535,6 +590,15 @@ class Murmuration {
             } else {
                 this.birdUniforms['birdColor'].value.set(0.0, 0.0, 0.0);
             }
+        }
+    }
+    
+    setColorMode(enabled) {
+        this.colorMode = enabled;
+        localStorage.setItem('murmr_color_mode', enabled);
+        
+        if (this.birdUniforms) {
+            this.birdUniforms['colorMode'].value = enabled ? 1.0 : 0.0;
         }
     }
     

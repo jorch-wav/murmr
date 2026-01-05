@@ -25,8 +25,13 @@ class MurmrApp {
         
         // Initialize theme from storage
         this.isDarkMode = localStorage.getItem('murmr_dark_mode') === 'true';
+        // Initialize color mode from storage
+        this.isColorMode = localStorage.getItem('murmr_color_mode') === 'true';
         // Apply theme after a short delay to ensure murmuration is ready
-        setTimeout(() => this.applyTheme(), 100);
+        setTimeout(() => {
+            this.applyTheme();
+            this.applyColorMode();
+        }, 100);
         
         // Initialize
         this.bindEvents();
@@ -47,6 +52,7 @@ class MurmrApp {
         document.getElementById('log-expense-btn').addEventListener('click', () => this.showExpenseModal());
         document.getElementById('view-stats-btn').addEventListener('click', () => this.showStats());
         document.getElementById('toggle-theme-btn').addEventListener('click', () => this.toggleTheme());
+        document.getElementById('toggle-color-btn').addEventListener('click', () => this.toggleColorMode());
         
         // Modal buttons
         document.getElementById('cancel-session').addEventListener('click', () => this.hideModals());
@@ -325,6 +331,35 @@ class MurmrApp {
             // Update murmuration background and bird color
             if (this.murmuration) {
                 this.murmuration.setDarkMode(false);
+            }
+        }
+    }
+    
+    // =====================================================
+    // COLOR MODE TOGGLE
+    // =====================================================
+    
+    toggleColorMode() {
+        this.isColorMode = !this.isColorMode;
+        localStorage.setItem('murmr_color_mode', this.isColorMode);
+        this.applyColorMode();
+    }
+    
+    applyColorMode() {
+        const colorBtn = document.getElementById('toggle-color-btn');
+        const iconEl = colorBtn.querySelector('.icon');
+        
+        if (this.isColorMode) {
+            iconEl.textContent = '⬛';
+            colorBtn.querySelector('.text').textContent = 'Mono Mode';
+            if (this.murmuration) {
+                this.murmuration.setColorMode(true);
+            }
+        } else {
+            iconEl.textContent = '🌈';
+            colorBtn.querySelector('.text').textContent = 'Color Mode';
+            if (this.murmuration) {
+                this.murmuration.setColorMode(false);
             }
         }
     }
