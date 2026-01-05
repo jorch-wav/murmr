@@ -23,14 +23,11 @@ class MurmrApp {
         this.menuToggle = document.getElementById('menu-toggle');
         this.themeBtn = document.getElementById('toggle-theme-btn');
         
-        // Initialize theme from storage
-        this.isDarkMode = localStorage.getItem('murmr_dark_mode') === 'true';
-        // Initialize color mode from storage
-        this.isColorMode = localStorage.getItem('murmr_color_mode') === 'true';
+        // Initialize theme mode from storage: 'light', 'dark', or 'color'
+        this.themeMode = localStorage.getItem('murmr_theme_mode') || 'light';
         // Apply theme after a short delay to ensure murmuration is ready
         setTimeout(() => {
-            this.applyTheme();
-            this.applyColorMode();
+            this.applyThemeMode();
         }, 100);
         
         // Initialize
@@ -51,8 +48,7 @@ class MurmrApp {
         document.getElementById('log-session-btn').addEventListener('click', () => this.showConfirmModal());
         document.getElementById('log-expense-btn').addEventListener('click', () => this.showExpenseModal());
         document.getElementById('view-stats-btn').addEventListener('click', () => this.showStats());
-        document.getElementById('toggle-theme-btn').addEventListener('click', () => this.toggleTheme());
-        document.getElementById('toggle-color-btn').addEventListener('click', () => this.toggleColorMode());
+        document.getElementById('toggle-theme-btn').addEventListener('click', () => this.cycleThemeMode());
         
         // Modal buttons
         document.getElementById('cancel-session').addEventListener('click', () => this.hideModals());
@@ -305,60 +301,55 @@ class MurmrApp {
     }
     
     // =====================================================
-    // THEME TOGGLE
+    // THEME MODE CYCLING: Light → Dark → Colour → Light
     // =====================================================
     
-    toggleTheme() {
-        this.isDarkMode = !this.isDarkMode;
-        localStorage.setItem('murmr_dark_mode', this.isDarkMode);
-        this.applyTheme();
+    cycleThemeMode() {
+        // Cycle through: light → dark → color → light
+        if (this.themeMode === 'light') {
+            this.themeMode = 'dark';
+        } else if (this.themeMode === 'dark') {
+            this.themeMode = 'color';
+        } else {
+            this.themeMode = 'light';
+        }
+        localStorage.setItem('murmr_theme_mode', this.themeMode);
+        this.applyThemeMode();
     }
     
-    applyTheme() {
+    applyThemeMode() {
         const iconEl = this.themeBtn.querySelector('.icon');
-        if (this.isDarkMode) {
+        const textEl = this.themeBtn.querySelector('.text');
+        
+        // Reset classes
+        document.body.classList.remove('dark-mode');
+        
+        if (this.themeMode === 'dark') {
+            // Dark mode: dark bg, white birds, no color
             document.body.classList.add('dark-mode');
-            iconEl.className = 'icon pixel-sun';
-            this.themeBtn.querySelector('.text').textContent = 'Light Mode';
-            // Update murmuration background and bird color
+            iconEl.className = 'icon';
+            iconEl.textContent = '🌈';
+            textEl.textContent = 'Colour Mode';
             if (this.murmuration) {
                 this.murmuration.setDarkMode(true);
+                this.murmuration.setColorMode(false);
             }
-        } else {
-            document.body.classList.remove('dark-mode');
+        } else if (this.themeMode === 'color') {
+            // Color mode: light bg, rainbow birds
             iconEl.className = 'icon pixel-moon';
-            this.themeBtn.querySelector('.text').textContent = 'Dark Mode';
-            // Update murmuration background and bird color
+            iconEl.textContent = '';
+            textEl.textContent = 'Light Mode';
             if (this.murmuration) {
                 this.murmuration.setDarkMode(false);
-            }
-        }
-    }
-    
-    // =====================================================
-    // COLOR MODE TOGGLE
-    // =====================================================
-    
-    toggleColorMode() {
-        this.isColorMode = !this.isColorMode;
-        localStorage.setItem('murmr_color_mode', this.isColorMode);
-        this.applyColorMode();
-    }
-    
-    applyColorMode() {
-        const colorBtn = document.getElementById('toggle-color-btn');
-        const iconEl = colorBtn.querySelector('.icon');
-        
-        if (this.isColorMode) {
-            iconEl.textContent = '⬛';
-            colorBtn.querySelector('.text').textContent = 'Mono Mode';
-            if (this.murmuration) {
                 this.murmuration.setColorMode(true);
             }
         } else {
-            iconEl.textContent = '🌈';
-            colorBtn.querySelector('.text').textContent = 'Color Mode';
+            // Light mode: light bg, black birds, no color
+            iconEl.className = 'icon';
+            iconEl.textContent = '🌙';
+            textEl.textContent = 'Dark Mode';
             if (this.murmuration) {
+                this.murmuration.setDarkMode(false);
                 this.murmuration.setColorMode(false);
             }
         }
