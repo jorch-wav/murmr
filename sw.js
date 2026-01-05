@@ -1,14 +1,14 @@
 // MURMR Service Worker - Offline Support
-const CACHE_NAME = 'murmr-v12';
+const CACHE_NAME = 'murmr-v13';
 const urlsToCache = [
-    '/',
-    '/index.html',
-    '/css/styles.css',
-    '/js/storage.js',
-    '/js/murmuration.js',
-    '/js/stats.js',
-    '/js/app.js',
-    '/manifest.json'
+    './',
+    './index.html',
+    './css/styles.css',
+    './js/storage.js',
+    './js/murmuration.js',
+    './js/stats.js',
+    './js/app.js',
+    './manifest.json'
 ];
 
 // Install - cache assets
