@@ -315,6 +315,16 @@
                 <h3 id="chart-title">Activity</h3>
                 <canvas id="stats-chart"></canvas>
             </div>
+            <div class="retro-buttons">
+                <button id="retro-session-btn" class="retro-btn">
+                    <span class="icon">🍃</span>
+                    <span class="text">Add Session Retroactively</span>
+                </button>
+                <button id="retro-expense-btn" class="retro-btn">
+                    <span class="icon">💸</span>
+                    <span class="text">Add Expense Retroactively</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -346,6 +356,50 @@
             <div class="modal-buttons">
                 <button id="cancel-session" class="modal-btn cancel">Cancel</button>
                 <button id="confirm-session" class="modal-btn confirm">Yes, Log It</button>
+            </div>
+        </div>
+
+        <div id="retro-session-modal" class="modal">
+            <h2>Add Session Retroactively</h2>
+            <div class="input-group">
+                <label for="retro-session-date">Date</label>
+                <input type="date" id="retro-session-date">
+            </div>
+            <div class="input-group">
+                <label for="retro-session-time">Time</label>
+                <input type="time" id="retro-session-time">
+            </div>
+            <div class="modal-buttons">
+                <button id="cancel-retro-session" class="modal-btn cancel">Cancel</button>
+                <button id="save-retro-session" class="modal-btn save">Add Session</button>
+            </div>
+        </div>
+
+        <div id="retro-expense-modal" class="modal">
+            <h2>Add Expense Retroactively</h2>
+            <div class="input-group">
+                <label for="retro-expense-date">Date</label>
+                <input type="date" id="retro-expense-date">
+            </div>
+            <div class="input-group">
+                <label for="retro-expense-time">Time</label>
+                <input type="time" id="retro-expense-time">
+            </div>
+            <div class="input-group">
+                <label for="retro-expense-amount">Amount ($)</label>
+                <input type="number" id="retro-expense-amount" step="0.01" min="0" placeholder="0.00">
+            </div>
+            <div class="input-group">
+                <label for="retro-expense-quantity">Quantity (grams)</label>
+                <input type="number" id="retro-expense-quantity" min="0.1" step="0.1" value="1" placeholder="1">
+            </div>
+            <div class="input-group">
+                <label for="retro-expense-note">Note (optional)</label>
+                <input type="text" id="retro-expense-note" placeholder="Pack, vape, etc.">
+            </div>
+            <div class="modal-buttons">
+                <button id="cancel-retro-expense" class="modal-btn cancel">Cancel</button>
+                <button id="save-retro-expense" class="modal-btn save">Add Expense</button>
             </div>
         </div>
     </div>

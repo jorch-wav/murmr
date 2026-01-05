@@ -521,6 +521,46 @@ body.dark-mode #menu-toggle {
     background: #f87171;
 }
 
+/* Retroactive Buttons in Stats */
+.retro-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+    padding-bottom: 30px;
+}
+
+.retro-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 16px 20px;
+    border: none;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.retro-btn:active {
+    transform: scale(0.97);
+    background: rgba(255, 255, 255, 1);
+}
+
+.retro-btn .icon {
+    font-size: 20px;
+}
+
+body.dark-mode .retro-btn {
+    background: rgba(60, 60, 60, 0.9);
+    color: #fff;
+}
+
 /* Animations */
 @keyframes scatter {
     0% { transform: scale(1); }

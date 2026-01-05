@@ -129,6 +129,24 @@ class MurmrStorage {
         return sessions[sessions.length - 1];
     }
     
+    // Log session at a specific timestamp (retroactive)
+    logSessionAt(timestamp) {
+        const sessions = this.getSessions();
+        
+        sessions.push({
+            id: timestamp,
+            timestamp: timestamp,
+            previousStreak: 0,
+            retroactive: true
+        });
+        
+        // Sort sessions by timestamp
+        sessions.sort((a, b) => a.timestamp - b.timestamp);
+        
+        this.saveSessions(sessions);
+        return sessions.find(s => s.timestamp === timestamp);
+    }
+    
     getSessionsInRange(startTime, endTime) {
         const sessions = this.getSessions();
         return sessions.filter(s => s.timestamp >= startTime && s.timestamp <= endTime);
@@ -166,6 +184,26 @@ class MurmrStorage {
         this.saveExpenses(expenses);
         
         return expenses[expenses.length - 1];
+    }
+    
+    // Log expense at a specific timestamp (retroactive)
+    logExpenseAt(timestamp, amount, quantity = 1, note = '') {
+        const expenses = this.getExpenses();
+        
+        expenses.push({
+            id: timestamp,
+            timestamp: timestamp,
+            amount: parseFloat(amount) || 0,
+            quantity: parseFloat(quantity) || 1,
+            note: note.trim(),
+            retroactive: true
+        });
+        
+        // Sort expenses by timestamp
+        expenses.sort((a, b) => a.timestamp - b.timestamp);
+        
+        this.saveExpenses(expenses);
+        return expenses.find(e => e.timestamp === timestamp);
     }
     
     getExpensesInRange(startTime, endTime) {

@@ -54,6 +54,14 @@ class MurmrApp {
         document.getElementById('cancel-expense').addEventListener('click', () => this.hideModals());
         document.getElementById('save-expense').addEventListener('click', () => this.saveExpense());
         
+        // Retroactive entry buttons
+        document.getElementById('retro-session-btn').addEventListener('click', () => this.showRetroSessionModal());
+        document.getElementById('retro-expense-btn').addEventListener('click', () => this.showRetroExpenseModal());
+        document.getElementById('cancel-retro-session').addEventListener('click', () => this.hideModals());
+        document.getElementById('save-retro-session').addEventListener('click', () => this.saveRetroSession());
+        document.getElementById('cancel-retro-expense').addEventListener('click', () => this.hideModals());
+        document.getElementById('save-retro-expense').addEventListener('click', () => this.saveRetroExpense());
+        
         // Close stats
         document.getElementById('close-stats').addEventListener('click', () => this.hideStats());
         
@@ -150,11 +158,90 @@ class MurmrApp {
         this.modalOverlay.classList.remove('visible');
         this.confirmModal.classList.remove('active');
         this.expenseModal.classList.remove('active');
+        document.getElementById('retro-session-modal').classList.remove('active');
+        document.getElementById('retro-expense-modal').classList.remove('active');
         
         // Clear inputs
         document.getElementById('expense-amount').value = '';
         document.getElementById('expense-quantity').value = '1';
         document.getElementById('expense-note').value = '';
+        document.getElementById('retro-session-date').value = '';
+        document.getElementById('retro-session-time').value = '';
+        document.getElementById('retro-expense-date').value = '';
+        document.getElementById('retro-expense-time').value = '';
+        document.getElementById('retro-expense-amount').value = '';
+        document.getElementById('retro-expense-quantity').value = '1';
+        document.getElementById('retro-expense-note').value = '';
+    }
+    
+    showRetroSessionModal() {
+        this.modalOverlay.classList.add('visible');
+        const modal = document.getElementById('retro-session-modal');
+        modal.classList.add('active');
+        
+        // Set default to now
+        const now = new Date();
+        document.getElementById('retro-session-date').value = now.toISOString().split('T')[0];
+        document.getElementById('retro-session-time').value = now.toTimeString().slice(0, 5);
+    }
+    
+    showRetroExpenseModal() {
+        this.modalOverlay.classList.add('visible');
+        const modal = document.getElementById('retro-expense-modal');
+        modal.classList.add('active');
+        
+        // Set default to now
+        const now = new Date();
+        document.getElementById('retro-expense-date').value = now.toISOString().split('T')[0];
+        document.getElementById('retro-expense-time').value = now.toTimeString().slice(0, 5);
+        
+        setTimeout(() => {
+            document.getElementById('retro-expense-amount').focus();
+        }, 100);
+    }
+    
+    saveRetroSession() {
+        const dateStr = document.getElementById('retro-session-date').value;
+        const timeStr = document.getElementById('retro-session-time').value;
+        
+        if (!dateStr || !timeStr) {
+            alert('Please enter both date and time');
+            return;
+        }
+        
+        const timestamp = new Date(`${dateStr}T${timeStr}`).getTime();
+        
+        // Add session at specific timestamp
+        this.storage.logSessionAt(timestamp);
+        this.hideModals();
+        this.statsView.update();
+        this.updateDisplay();
+    }
+    
+    saveRetroExpense() {
+        const dateStr = document.getElementById('retro-expense-date').value;
+        const timeStr = document.getElementById('retro-expense-time').value;
+        const amount = parseFloat(document.getElementById('retro-expense-amount').value);
+        const quantity = parseFloat(document.getElementById('retro-expense-quantity').value) || 1;
+        const note = document.getElementById('retro-expense-note').value.trim();
+        
+        if (!dateStr || !timeStr) {
+            alert('Please enter both date and time');
+            return;
+        }
+        
+        if (!amount || amount <= 0) {
+            alert('Please enter a valid amount');
+            return;
+        }
+        
+        const timestamp = new Date(`${dateStr}T${timeStr}`).getTime();
+        
+        // Add expense at specific timestamp
+        this.storage.logExpenseAt(timestamp, amount, quantity, note);
+        this.hideModals();
+        this.statsView.update();
+        this.updateDisplay();
     }
     
     // =====================================================
