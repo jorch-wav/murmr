@@ -323,34 +323,33 @@ class MurmrApp {
         
         // Reset classes
         document.body.classList.remove('dark-mode');
+        document.body.classList.remove('color-mode');
         
-        if (this.themeMode === 'dark') {
-            // Dark mode: dark bg, white birds, no color
-            document.body.classList.add('dark-mode');
-            iconEl.className = 'icon';
-            iconEl.textContent = '🌈';
-            textEl.textContent = 'Colour Mode';
-            if (this.murmuration) {
-                this.murmuration.setDarkMode(true);
-                this.murmuration.setColorMode(false);
-            }
-        } else if (this.themeMode === 'color') {
-            // Color mode: light bg, rainbow birds
-            iconEl.className = 'icon pixel-moon';
-            iconEl.textContent = '';
-            textEl.textContent = 'Light Mode';
-            if (this.murmuration) {
-                this.murmuration.setDarkMode(false);
-                this.murmuration.setColorMode(true);
-            }
-        } else {
-            // Light mode: light bg, black birds, no color
-            iconEl.className = 'icon';
+        if (this.themeMode === 'light') {
+            // Light mode: light sky bg, black birds
+            // Button shows: moon icon, "Dark Mode" (what comes next)
             iconEl.textContent = '🌙';
             textEl.textContent = 'Dark Mode';
             if (this.murmuration) {
-                this.murmuration.setDarkMode(false);
-                this.murmuration.setColorMode(false);
+                this.murmuration.setTheme('light');
+            }
+        } else if (this.themeMode === 'dark') {
+            // Dark mode: black bg, white birds
+            // Button shows: rainbow icon, "Colour Mode" (what comes next)
+            document.body.classList.add('dark-mode');
+            iconEl.textContent = '🌈';
+            textEl.textContent = 'Colour Mode';
+            if (this.murmuration) {
+                this.murmuration.setTheme('dark');
+            }
+        } else {
+            // Color mode: dark blue bg, rainbow birds
+            // Button shows: sun icon, "Light Mode" (what comes next)
+            document.body.classList.add('color-mode');
+            iconEl.textContent = '☀️';
+            textEl.textContent = 'Light Mode';
+            if (this.murmuration) {
+                this.murmuration.setTheme('color');
             }
         }
     }

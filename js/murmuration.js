@@ -602,11 +602,55 @@ class Murmuration {
         }
     }
     
+    // Combined theme setter: 'light', 'dark', or 'color'
+    setTheme(mode) {
+        if (!this.renderer || !this.scene) return;
+        
+        let bgColor;
+        let birdColorR, birdColorG, birdColorB;
+        let colorModeValue = 0.0;
+        
+        if (mode === 'dark') {
+            // Dark mode: black bg, white birds
+            bgColor = 0x000000;
+            birdColorR = 0.9; birdColorG = 0.9; birdColorB = 0.9;
+            colorModeValue = 0.0;
+        } else if (mode === 'color') {
+            // Color mode: dark blue bg, rainbow birds
+            bgColor = 0x0a1628;
+            birdColorR = 0.9; birdColorG = 0.9; birdColorB = 0.9;
+            colorModeValue = 1.0;
+        } else {
+            // Light mode: sky blue bg, black birds
+            bgColor = 0x87CEEB;
+            birdColorR = 0.0; birdColorG = 0.0; birdColorB = 0.0;
+            colorModeValue = 0.0;
+        }
+        
+        // Update scene background and fog
+        this.scene.background = new THREE.Color(bgColor);
+        this.scene.fog.color = new THREE.Color(bgColor);
+        
+        // Update renderer clear color
+        this.renderer.setClearColor(bgColor, 1);
+        
+        // Update bird uniforms
+        if (this.birdUniforms) {
+            this.birdUniforms['birdColor'].value.set(birdColorR, birdColorG, birdColorB);
+            this.birdUniforms['colorMode'].value = colorModeValue;
+        }
+        
+        this.colorMode = (mode === 'color');
+    }
+    
     // Trigger death animation - birds dive down
     triggerDeath(callback) {
         if (!this.velocityUniforms) return;
         
-        // Animate death mode from 0 to 1 over 8 seconds for full fall off screen
+        // Set death mode immediately so wings stop flapping
+        this.positionUniforms['deathMode'].value = 1.0;
+        
+        // Animate death velocity from 0 to 1 over 8 seconds for full fall off screen
         const duration = 8000;
         const startTime = performance.now();
         
@@ -617,7 +661,6 @@ class Murmuration {
             // Ease in - starts slow, accelerates like gravity
             const eased = progress * progress;
             this.velocityUniforms['deathMode'].value = eased;
-            this.positionUniforms['deathMode'].value = eased;
             
             if (progress < 1) {
                 requestAnimationFrame(animateDeath);
