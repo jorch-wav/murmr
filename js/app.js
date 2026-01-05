@@ -45,6 +45,7 @@ class MurmrApp {
         // Logging buttons
         document.getElementById('log-session-btn').addEventListener('click', () => this.showConfirmModal());
         document.getElementById('log-expense-btn').addEventListener('click', () => this.showExpenseModal());
+        document.getElementById('view-stats-btn').addEventListener('click', () => this.showStats());
         document.getElementById('toggle-theme-btn').addEventListener('click', () => this.toggleTheme());
         
         // Modal buttons
