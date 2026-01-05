@@ -350,6 +350,7 @@ class Murmuration {
         this.velocityUniforms['alignmentDistance'] = { value: 20.0 };
         this.velocityUniforms['cohesionDistance'] = { value: 20.0 };
         this.velocityUniforms['predator'] = { value: new THREE.Vector3() };
+        this.velocityUniforms['deathMode'] = { value: 0.0 };
         this.velocityVariable.material.defines.BOUNDS = this.BOUNDS.toFixed(2);
 
         this.velocityVariable.wrapS = THREE.RepeatWrapping;
@@ -529,6 +530,36 @@ class Murmuration {
                 this.birdUniforms['birdColor'].value.set(0.0, 0.0, 0.0);
             }
         }
+    }
+    
+    // Trigger death animation - birds dive down
+    triggerDeath(callback) {
+        if (!this.velocityUniforms) return;
+        
+        // Animate death mode from 0 to 1 over 2 seconds
+        const duration = 2000;
+        const startTime = performance.now();
+        
+        const animateDeath = () => {
+            const elapsed = performance.now() - startTime;
+            const progress = Math.min(1, elapsed / duration);
+            
+            // Ease in - starts slow, accelerates
+            const eased = progress * progress;
+            this.velocityUniforms['deathMode'].value = eased;
+            
+            if (progress < 1) {
+                requestAnimationFrame(animateDeath);
+            } else {
+                // Death complete - reset and callback
+                setTimeout(() => {
+                    this.velocityUniforms['deathMode'].value = 0;
+                    if (callback) callback();
+                }, 500);
+            }
+        };
+        
+        animateDeath();
     }
     
     // =====================================================

@@ -55,10 +55,24 @@ class MurmrStorage {
     }
     
     // Calculate birds based on streak (10 per hour, starting at 1)
+    // First time users get 5000 birds to see the full murmuration
     calculateBirds() {
+        const sessions = this.getSessions();
+        
+        // If no sessions logged yet, show the full murmuration (5000 birds)
+        if (sessions.length === 0) {
+            return 5000;
+        }
+        
+        // After first session, birds based on streak duration
         const durationMs = this.getStreakDuration();
         const hours = durationMs / (1000 * 60 * 60);
         return Math.max(1, Math.floor(1 + hours * 10));
+    }
+    
+    // Check if this is user's first time (no sessions logged)
+    isFirstTime() {
+        return this.getSessions().length === 0;
     }
     
     // Format duration for display

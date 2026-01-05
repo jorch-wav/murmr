@@ -43,6 +43,7 @@
         uniform float alignmentDistance;
         uniform float cohesionDistance;
         uniform vec3 predator;
+        uniform float deathMode;
         uniform sampler2D texturePosition;
         uniform sampler2D textureVelocity;
 
@@ -138,6 +139,16 @@
 
             if ( length( velocity ) > limit ) {
                 velocity = normalize( velocity ) * limit;
+            }
+
+            // Death mode: birds stop flocking and dive down
+            if ( deathMode > 0.0 ) {
+                // Gradually take over velocity with downward dive
+                vec3 deathVelocity = vec3( 0.0, -15.0, 0.0 );
+                // Add some random spread based on position
+                deathVelocity.x = sin( selfPosition.x * 0.1 + time ) * 3.0;
+                deathVelocity.z = cos( selfPosition.z * 0.1 + time ) * 3.0;
+                velocity = mix( velocity, deathVelocity, deathMode );
             }
 
             gl_FragColor = vec4( velocity, 1.0 );

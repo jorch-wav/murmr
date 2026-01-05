@@ -290,15 +290,14 @@ class MurmrApp {
     // =====================================================
     
     logSession() {
-        this.storage.logSession();
-        this.murmuration.reset();
-        this.updateDisplay();
         this.hideModals();
         
-        // Visual feedback - canvas flash
-        const canvas = document.getElementById('murmuration-canvas');
-        canvas.classList.add('scatter-flash');
-        setTimeout(() => canvas.classList.remove('scatter-flash'), 300);
+        // Trigger death animation, then reset
+        this.murmuration.triggerDeath(() => {
+            this.storage.logSession();
+            this.murmuration.reset();
+            this.updateDisplay();
+        });
     }
     
     saveExpense() {
