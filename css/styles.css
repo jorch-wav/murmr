@@ -254,7 +254,7 @@ body.dark-mode #menu-toggle {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: calc(var(--safe-area-top) + 20px) 20px 10px;
+    padding: calc(var(--safe-area-top) + 20px) 20px 15px;
     background: #87CEEB;
     z-index: 10;
 }
@@ -263,6 +263,7 @@ body.dark-mode #menu-toggle {
     font-size: 24px;
     font-weight: 600;
     color: #333;
+    margin-top: 5px;
 }
 
 .close-btn {
@@ -529,7 +530,7 @@ body.dark-mode #menu-toggle {
     flex-direction: row;
     gap: 12px;
     margin-top: 20px;
-    padding-bottom: 30px;
+    padding-bottom: calc(var(--safe-area-bottom) + 30px);
 }
 
 .retro-btn {
