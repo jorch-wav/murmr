@@ -158,6 +158,7 @@ class StatsView {
     }
     
     bindLogItemEvents(container) {
+        const self = this;
         container.querySelectorAll('.log-item').forEach(item => {
             let startX = 0;
             let currentX = 0;
@@ -166,11 +167,18 @@ class StatsView {
             
             // Touch events for swipe
             item.addEventListener('touchstart', (e) => {
+                // Don't interfere with button touches
+                if (e.target.closest('.log-item-edit') || e.target.closest('.log-item-delete')) {
+                    return;
+                }
                 startX = e.touches[0].clientX;
                 item.classList.remove('swiped');
             }, { passive: true });
             
             item.addEventListener('touchmove', (e) => {
+                if (e.target.closest('.log-item-edit') || e.target.closest('.log-item-delete')) {
+                    return;
+                }
                 currentX = e.touches[0].clientX;
                 const deltaX = startX - currentX;
                 
@@ -181,18 +189,28 @@ class StatsView {
                 }
             }, { passive: true });
             
-            // Edit button click
+            // Edit button - use touchend for mobile
             const editBtn = item.querySelector('.log-item-edit');
+            editBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                self.editLogItem(type, index);
+            });
             editBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                this.editLogItem(type, index);
+                self.editLogItem(type, index);
             });
             
-            // Delete button click
+            // Delete button - use touchend for mobile
             const deleteBtn = item.querySelector('.log-item-delete');
+            deleteBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                self.deleteLogItem(type, index);
+            });
             deleteBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                this.deleteLogItem(type, index);
+                self.deleteLogItem(type, index);
             });
         });
     }
