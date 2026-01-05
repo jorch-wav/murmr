@@ -254,7 +254,7 @@ body.dark-mode #menu-toggle {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: calc(var(--safe-area-top) + 10px) 20px 8px;
+    padding: calc(var(--safe-area-top) + 20px) 20px 10px;
     background: #87CEEB;
     z-index: 10;
 }
