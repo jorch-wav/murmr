@@ -121,9 +121,15 @@ class StatsView {
                                 <span class="log-item-date">${dateStr}</span>
                                 <span class="log-item-time">${timeStr}</span>
                             </div>
-                            <span class="log-item-value log-type-session">Session</span>
+                            <span class="log-item-value log-type-session">
+                                <span class="icon pixel-smoke"></span>
+                                Session
+                            </span>
                         </div>
-                        <div class="log-item-delete">Delete</div>
+                        <div class="log-item-actions">
+                            <div class="log-item-edit">Edit</div>
+                            <div class="log-item-delete">Delete</div>
+                        </div>
                     </div>
                 `;
             } else {
@@ -134,9 +140,15 @@ class StatsView {
                                 <span class="log-item-date">${dateStr}</span>
                                 <span class="log-item-time">${timeStr}${item.note ? ' · ' + item.note : ''}</span>
                             </div>
-                            <span class="log-item-value log-type-expense">$${item.amount.toFixed(2)}</span>
+                            <span class="log-item-value log-type-expense">
+                                <span class="icon pixel-coin"></span>
+                                $${item.amount.toFixed(2)}
+                            </span>
                         </div>
-                        <div class="log-item-delete">Delete</div>
+                        <div class="log-item-actions">
+                            <div class="log-item-edit">Edit</div>
+                            <div class="log-item-delete">Delete</div>
+                        </div>
                     </div>
                 `;
             }
@@ -149,13 +161,12 @@ class StatsView {
         container.querySelectorAll('.log-item').forEach(item => {
             let startX = 0;
             let currentX = 0;
-            let isSwiping = false;
             const type = item.dataset.type;
+            const index = parseInt(item.dataset.index);
             
             // Touch events for swipe
             item.addEventListener('touchstart', (e) => {
                 startX = e.touches[0].clientX;
-                isSwiping = false;
                 item.classList.remove('swiped');
             }, { passive: true });
             
@@ -164,25 +175,24 @@ class StatsView {
                 const deltaX = startX - currentX;
                 
                 if (deltaX > 30) {
-                    isSwiping = true;
                     item.classList.add('swiped');
                 } else if (deltaX < -30) {
                     item.classList.remove('swiped');
                 }
             }, { passive: true });
             
-            item.addEventListener('touchend', () => {
-                if (!isSwiping) {
-                    // Tap - edit
-                    this.editLogItem(type, parseInt(item.dataset.index));
-                }
+            // Edit button click
+            const editBtn = item.querySelector('.log-item-edit');
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.editLogItem(type, index);
             });
             
             // Delete button click
             const deleteBtn = item.querySelector('.log-item-delete');
             deleteBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                this.deleteLogItem(type, parseInt(item.dataset.index));
+                this.deleteLogItem(type, index);
             });
         });
     }
