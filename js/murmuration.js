@@ -318,9 +318,16 @@ class Murmuration {
     }
     
     init() {
-        // Check dark mode preference
-        const isDarkMode = localStorage.getItem('murmr_dark_mode') === 'true';
-        const bgColor = isDarkMode ? 0x000000 : 0x87CEEB;
+        // Check theme mode preference: 'light', 'dark', or 'color'
+        const themeMode = localStorage.getItem('murmr_theme_mode') || 'light';
+        let bgColor;
+        if (themeMode === 'dark') {
+            bgColor = 0x000000;
+        } else if (themeMode === 'color') {
+            bgColor = 0x0a1628;
+        } else {
+            bgColor = 0x87CEEB;
+        }
         
         // Scene with background
         this.scene = new THREE.Scene();
@@ -395,14 +402,25 @@ class Murmuration {
         const cohortColorsForBirds = this.generateCohortColorsForBirds(this.BIRDS);
         const geometry = new BirdGeometry(this.BIRDS, this.WIDTH, cohortColorsForBirds);
         
-        // Check if dark mode is active
-        const isDark = document.body.classList.contains('dark-mode');
-        const birdColorValue = isDark ? new THREE.Vector3(0.9, 0.9, 0.9) : new THREE.Vector3(0.0, 0.0, 0.0);
+        // Check theme mode from storage
+        const themeMode = localStorage.getItem('murmr_theme_mode') || 'light';
+        let birdColorValue;
+        let colorModeValue = 0.0;
+        
+        if (themeMode === 'dark') {
+            birdColorValue = new THREE.Vector3(0.9, 0.9, 0.9);
+        } else if (themeMode === 'color') {
+            birdColorValue = new THREE.Vector3(0.9, 0.9, 0.9);
+            colorModeValue = 1.0;
+            this.colorMode = true;
+        } else {
+            birdColorValue = new THREE.Vector3(0.0, 0.0, 0.0);
+        }
 
         this.birdUniforms = {
             'color': { value: new THREE.Color(0x000000) },
             'birdColor': { value: birdColorValue },
-            'colorMode': { value: this.colorMode ? 1.0 : 0.0 },
+            'colorMode': { value: colorModeValue },
             'texturePosition': { value: null },
             'textureVelocity': { value: null },
             'time': { value: 1.0 },
