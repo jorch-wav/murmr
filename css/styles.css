@@ -26,43 +26,51 @@
     --safe-area-bottom: env(safe-area-inset-bottom, 20px);
 }
 
-/* 8-bit Pixel Icons */
-.pixel-leaf, .pixel-coin, .pixel-chart, .pixel-moon, .pixel-sun {
+/* 8-bit Pixel Icons - Game Boy Style (Monochrome) */
+.pixel-smoke, .pixel-coin, .pixel-chart, .pixel-moon, .pixel-sun {
     display: inline-block;
     width: 24px;
     height: 24px;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
+    color: inherit;
 }
 
-/* Leaf icon - simple pixel art */
-.pixel-leaf {
-    background: linear-gradient(135deg, 
-        transparent 30%, 
-        #4ade80 30%, 
-        #4ade80 70%, 
-        transparent 70%
-    );
+/* Smoke/vapor icon - abstract wavy lines */
+.pixel-smoke {
     position: relative;
+    opacity: 0.9;
 }
-.pixel-leaf::before {
+.pixel-smoke::before,
+.pixel-smoke::after {
     content: '';
     position: absolute;
-    width: 3px;
-    height: 12px;
-    background: #22c55e;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%) rotate(-20deg);
-    transform-origin: bottom;
+    background: currentColor;
+    border-radius: 50%;
+}
+.pixel-smoke::before {
+    width: 8px;
+    height: 8px;
+    bottom: 2px;
+    left: 8px;
+    box-shadow: 
+        -6px -6px 0 0 currentColor,
+        6px -10px 0 0 currentColor,
+        0px -14px 0 -1px currentColor;
+}
+.pixel-smoke::after {
+    width: 6px;
+    height: 6px;
+    bottom: 8px;
+    left: 2px;
 }
 
 /* Coin icon - simple circle with $ */
 .pixel-coin {
-    background: #fbbf24;
+    border: 2px solid currentColor;
     border-radius: 50%;
-    border: 2px solid #f59e0b;
     position: relative;
+    background: transparent;
 }
 .pixel-coin::before {
     content: '$';
@@ -72,7 +80,7 @@
     transform: translate(-50%, -50%);
     font-size: 14px;
     font-weight: bold;
-    color: #92400e;
+    color: inherit;
     font-family: monospace;
 }
 
@@ -82,46 +90,60 @@
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    gap: 2px;
+    gap: 3px;
     padding: 2px;
 }
 .pixel-chart::before,
 .pixel-chart::after {
     content: '';
-    width: 5px;
+    width: 6px;
     background: currentColor;
 }
 .pixel-chart::before {
     height: 10px;
 }
 .pixel-chart::after {
-    height: 16px;
+    height: 18px;
 }
 
-/* Moon icon */
+/* Moon icon - crescent */
 .pixel-moon {
     background: transparent;
     border-radius: 50%;
     box-shadow: inset 8px -2px 0 0 currentColor;
 }
 
-/* Sun icon */
+/* Sun icon - circle with 8 rays */
 .pixel-sun {
+    position: relative;
+    width: 10px;
+    height: 10px;
     background: currentColor;
     border-radius: 50%;
-    position: relative;
+    margin: 7px;
 }
-.pixel-sun::before {
+.pixel-sun::before,
+.pixel-sun::after {
     content: '';
     position: absolute;
-    top: -4px;
-    left: -4px;
-    right: -4px;
-    bottom: -4px;
-    background: 
-        linear-gradient(currentColor, currentColor) center/2px 100%,
-        linear-gradient(currentColor, currentColor) center/100% 2px;
-    background-repeat: no-repeat;
+    background: currentColor;
+}
+.pixel-sun::before {
+    width: 2px;
+    height: 24px;
+    top: -7px;
+    left: 4px;
+    box-shadow: 
+        6px 6px 0 0 currentColor,
+        -6px 6px 0 0 currentColor,
+        6px -6px 0 0 currentColor,
+        -6px -6px 0 0 currentColor;
+}
+.pixel-sun::after {
+    width: 24px;
+    height: 2px;
+    top: 4px;
+    left: -7px;
 }
 
 html, body {
