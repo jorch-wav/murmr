@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect width="192" height="192" fill="#0a0a1a"/>
+  <g fill="rgba(255,255,255,0.9)">
+    <!-- Abstract birds forming a murmuration pattern -->
+    <path d="M96 60 L92 56 L90 58 L92 54 L88 52 L96 54 L104 52 L100 54 L102 58 L100 56 Z"/>
+    <path d="M70 75 L66 71 L64 73 L66 69 L62 67 L70 69 L78 67 L74 69 L76 73 L74 71 Z" opacity="0.8"/>
+    <path d="M122 78 L118 74 L116 76 L118 72 L114 70 L122 72 L130 70 L126 72 L128 76 L126 74 Z" opacity="0.8"/>
+    <path d="M85 95 L81 91 L79 93 L81 89 L77 87 L85 89 L93 87 L89 89 L91 93 L89 91 Z" opacity="0.7"/>
+    <path d="M108 92 L104 88 L102 90 L104 86 L100 84 L108 86 L116 84 L112 86 L114 90 L112 88 Z" opacity="0.7"/>
+    <path d="M60 100 L56 96 L54 98 L56 94 L52 92 L60 94 L68 92 L64 94 L66 98 L64 96 Z" opacity="0.6"/>
+    <path d="M130 105 L126 101 L124 103 L126 99 L122 97 L130 99 L138 97 L134 99 L136 103 L134 101 Z" opacity="0.6"/>
+    <path d="M75 115 L71 111 L69 113 L71 109 L67 107 L75 109 L83 107 L79 109 L81 113 L79 111 Z" opacity="0.5"/>
+    <path d="M115 118 L111 114 L109 116 L111 112 L107 110 L115 112 L123 110 L119 112 L121 116 L119 114 Z" opacity="0.5"/>
+    <path d="M96 130 L92 126 L90 128 L92 124 L88 122 L96 124 L104 122 L100 124 L102 128 L100 126 Z" opacity="0.4"/>
+  </g>
+  <!-- MURMR text -->
+  <text x="96" y="165" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-family="system-ui, sans-serif" font-size="18" font-weight="300" letter-spacing="4">MURMR</text>
+</svg>
