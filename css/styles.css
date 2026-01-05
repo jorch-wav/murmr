@@ -107,23 +107,45 @@ html, body {
     opacity: 0.8;
 }
 
-#swipe-hint {
+/* Menu Toggle Button */
+#menu-toggle {
     position: absolute;
-    bottom: calc(var(--safe-area-bottom) + 20px);
-    left: 0;
-    right: 0;
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 12px;
-    letter-spacing: 1px;
-    animation: pulse 2s ease-in-out infinite;
-    pointer-events: none;
-    z-index: 20;
+    bottom: calc(var(--safe-area-bottom) + 100px);
+    right: 15px;
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: #333;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 25;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-@keyframes pulse {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 0.8; }
+#menu-toggle span {
+    transition: transform 0.3s ease;
+}
+
+#menu-toggle.open span {
+    transform: rotate(180deg);
+}
+
+#menu-toggle:active {
+    transform: scale(0.95);
+}
+
+body.dark-mode #menu-toggle {
+    background: rgba(50, 50, 50, 0.5);
+    color: #fff;
 }
 
 /* Logging Overlay */

@@ -1,6 +1,6 @@
 // =====================================================
 // MURMR - Main Application
-// Swipe navigation, modals, and state management
+// Menu toggle, modals, and state management
 // =====================================================
 
 class MurmrApp {
@@ -11,9 +11,6 @@ class MurmrApp {
         this.statsView = new StatsView(this.storage);
         
         // UI state
-        this.swipeStartX = 0;
-        this.swipeCurrentX = 0;
-        this.isSwiping = false;
         this.loggingVisible = false;
         this.statsVisible = false;
         
@@ -23,7 +20,7 @@ class MurmrApp {
         this.modalOverlay = document.getElementById('modal-overlay');
         this.expenseModal = document.getElementById('expense-modal');
         this.confirmModal = document.getElementById('confirm-modal');
-        this.swipeHint = document.getElementById('swipe-hint');
+        this.menuToggle = document.getElementById('menu-toggle');
         this.themeBtn = document.getElementById('toggle-theme-btn');
         
         // Initialize theme from storage
@@ -35,9 +32,6 @@ class MurmrApp {
         this.bindEvents();
         this.startUpdateLoop();
         this.updateDisplay();
-        
-        // Hide swipe hint after first interaction
-        this.hintShown = false;
     }
     
     // =====================================================
@@ -45,15 +39,8 @@ class MurmrApp {
     // =====================================================
     
     bindEvents() {
-        // Touch events for swipe navigation
-        document.addEventListener('touchstart', (e) => this.onTouchStart(e), { passive: true });
-        document.addEventListener('touchmove', (e) => this.onTouchMove(e), { passive: false });
-        document.addEventListener('touchend', (e) => this.onTouchEnd(e), { passive: true });
-        
-        // Mouse events for desktop testing
-        document.addEventListener('mousedown', (e) => this.onMouseDown(e));
-        document.addEventListener('mousemove', (e) => this.onMouseMove(e));
-        document.addEventListener('mouseup', (e) => this.onMouseUp(e));
+        // Menu toggle button
+        this.menuToggle.addEventListener('click', () => this.toggleMenu());
         
         // Logging buttons
         document.getElementById('log-session-btn').addEventListener('click', () => this.showConfirmModal());
@@ -101,143 +88,27 @@ class MurmrApp {
     }
     
     // =====================================================
-    // SWIPE NAVIGATION
-    // =====================================================
-    
-    onTouchStart(e) {
-        // Don't track if in modal
-        if (this.modalOverlay.classList.contains('visible')) return;
-        // Handle stats screen separately
-        if (this.statsVisible) return;
-        
-        this.swipeStartX = e.touches[0].clientX;
-        this.swipeCurrentX = this.swipeStartX;
-        this.isSwiping = true;
-        
-        // Hide hint
-        if (!this.hintShown) {
-            this.hintShown = true;
-            this.swipeHint.style.opacity = '0';
-        }
-    }
-    
-    onTouchMove(e) {
-        if (!this.isSwiping || this.statsVisible) return;
-        
-        this.swipeCurrentX = e.touches[0].clientX;
-        const deltaX = this.swipeStartX - this.swipeCurrentX;
-        
-        // Show logging overlay on right swipe
-        if (deltaX > 20 && !this.statsVisible) {
-            const progress = Math.min(1, (deltaX - 20) / 100);
-            this.loggingOverlay.style.transform = `translateX(${-120 * progress}px)`;
-            
-            // Prevent scrolling
-            if (deltaX > 50) {
-                e.preventDefault();
-            }
-        }
-    }
-    
-    onTouchEnd(e) {
-        if (!this.isSwiping) return;
-        
-        const deltaX = this.swipeStartX - this.swipeCurrentX;
-        
-        if (deltaX > 100) {
-            // Swipe left - show logging, potentially stats
-            if (!this.loggingVisible) {
-                this.showLogging();
-            } else if (deltaX > 180) {
-                this.showStats();
-            }
-        } else if (deltaX < -50 && this.loggingVisible) {
-            // Swipe right - hide logging
-            this.hideLogging();
-        } else {
-            // Reset position
-            this.loggingOverlay.style.transform = '';
-        }
-        
-        this.isSwiping = false;
-    }
-    
-    // Mouse events for desktop testing
-    onMouseDown(e) {
-        if (this.modalOverlay.classList.contains('visible')) return;
-        if (e.target.closest('.log-btn') || e.target.closest('.modal') || e.target.closest('#stats-screen')) return;
-        
-        // Handle stats screen drag to close
-        if (this.statsVisible) {
-            this.statsSwipeStartX = e.clientX;
-            return;
-        }
-        
-        this.swipeStartX = e.clientX;
-        this.swipeCurrentX = this.swipeStartX;
-        this.isSwiping = true;
-    }
-    
-    onMouseMove(e) {
-        if (e.buttons !== 1) return;
-        
-        // Handle stats screen drag
-        if (this.statsVisible && this.statsSwipeStartX !== undefined) {
-            const deltaX = e.clientX - this.statsSwipeStartX;
-            if (deltaX > 100) {
-                this.hideStats();
-                this.statsSwipeStartX = undefined;
-            }
-            return;
-        }
-        
-        if (!this.isSwiping) return;
-        
-        this.swipeCurrentX = e.clientX;
-        const deltaX = this.swipeStartX - this.swipeCurrentX;
-        
-        if (deltaX > 20 && !this.statsVisible) {
-            const progress = Math.min(1, (deltaX - 20) / 100);
-            this.loggingOverlay.style.transform = `translateX(${-120 * progress}px)`;
-        }
-    }
-    
-    onMouseUp(e) {
-        // Clear stats swipe
-        this.statsSwipeStartX = undefined;
-        
-        if (!this.isSwiping) return;
-        
-        const deltaX = this.swipeStartX - this.swipeCurrentX;
-        
-        if (deltaX > 100) {
-            if (!this.loggingVisible) {
-                this.showLogging();
-            } else if (deltaX > 180) {
-                this.showStats();
-            }
-        } else if (deltaX < -50 && this.loggingVisible) {
-            this.hideLogging();
-        } else {
-            this.loggingOverlay.style.transform = '';
-        }
-        
-        this.isSwiping = false;
-    }
-    
-    // =====================================================
     // UI STATE MANAGEMENT
     // =====================================================
+    
+    toggleMenu() {
+        if (this.loggingVisible) {
+            this.hideLogging();
+        } else {
+            this.showLogging();
+        }
+    }
     
     showLogging() {
         this.loggingVisible = true;
         this.loggingOverlay.classList.add('visible');
+        this.menuToggle.classList.add('open');
     }
     
     hideLogging() {
         this.loggingVisible = false;
         this.loggingOverlay.classList.remove('visible');
-        this.loggingOverlay.style.transform = '';
+        this.menuToggle.classList.remove('open');
     }
     
     showStats() {
