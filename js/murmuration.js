@@ -344,6 +344,7 @@ class Murmuration {
 
         this.positionUniforms['time'] = { value: 0.0 };
         this.positionUniforms['delta'] = { value: 0.0 };
+        this.positionUniforms['deathMode'] = { value: 0.0 };
         this.velocityUniforms['time'] = { value: 1.0 };
         this.velocityUniforms['delta'] = { value: 0.0 };
         this.velocityUniforms['separationDistance'] = { value: 20.0 };
@@ -552,6 +553,7 @@ class Murmuration {
             // Ease in - starts slow, accelerates like gravity
             const eased = progress * progress;
             this.velocityUniforms['deathMode'].value = eased;
+            this.positionUniforms['deathMode'].value = eased;
             
             if (progress < 1) {
                 requestAnimationFrame(animateDeath);
@@ -559,6 +561,7 @@ class Murmuration {
                 // Death complete - wait for birds to fall off screen, then reset
                 setTimeout(() => {
                     this.velocityUniforms['deathMode'].value = 0;
+                    this.positionUniforms['deathMode'].value = 0;
                     if (callback) callback();
                 }, 3000);
             }
