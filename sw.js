@@ -1,5 +1,5 @@
 // MURMR Service Worker - Offline Support
-const CACHE_NAME = 'murmr-v14';
+const CACHE_NAME = 'murmr-v15';
 const urlsToCache = [
     './',
     './index.html',
@@ -35,15 +35,21 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// Fetch - serve from cache, fallback to network
+// Fetch - network first, fallback to cache (ensures updates are received)
 self.addEventListener('fetch', (event) => {
     event.respondWith(
-        caches.match(event.request)
+        fetch(event.request)
             .then((response) => {
-                if (response) {
-                    return response;
-                }
-                return fetch(event.request);
+                // Clone and cache the fresh response
+                const responseClone = response.clone();
+                caches.open(CACHE_NAME).then((cache) => {
+                    cache.put(event.request, responseClone);
+                });
+                return response;
+            })
+            .catch(() => {
+                // Network failed, try cache
+                return caches.match(event.request);
             })
     );
 });
