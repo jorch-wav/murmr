@@ -254,7 +254,7 @@ body.dark-mode #menu-toggle {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: calc(var(--safe-area-top) + 20px) 20px 15px;
+    padding: calc(var(--safe-area-top) + 20px) 20px 20px;
     background: #87CEEB;
     z-index: 10;
 }
@@ -263,7 +263,6 @@ body.dark-mode #menu-toggle {
     font-size: 24px;
     font-weight: 600;
     color: #333;
-    margin-top: 5px;
 }
 
 .close-btn {
@@ -286,7 +285,7 @@ body.dark-mode #menu-toggle {
 .tab-container {
     display: flex;
     gap: 8px;
-    padding: 5px 20px 15px;
+    padding: 5px 20px 20px;
     overflow-x: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
