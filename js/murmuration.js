@@ -468,7 +468,7 @@ class Murmuration {
     }
     
     changeBirdCount(newWidth) {
-        newWidth = Math.max(1, Math.min(71, newWidth));
+        newWidth = Math.max(1, Math.min(85, newWidth));
         if (newWidth === this.WIDTH) return;
         
         this.WIDTH = newWidth;
@@ -489,7 +489,7 @@ class Murmuration {
     // =====================================================
     
     setBoidCount(count) {
-        this.targetBirdCount = Math.max(1, Math.min(5000, count));
+        this.targetBirdCount = Math.max(1, Math.min(7200, count));
     }
     
     getBoidCount() {

@@ -59,9 +59,9 @@ class MurmrStorage {
     calculateBirds() {
         const sessions = this.getSessions();
         
-        // If no sessions logged yet, show the full murmuration (5000 birds)
+        // If no sessions logged yet, show the full murmuration (7200 birds = a month)
         if (sessions.length === 0) {
-            return 5000;
+            return 7200;
         }
         
         // After first session, birds based on streak duration
