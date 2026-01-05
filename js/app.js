@@ -278,11 +278,34 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-// Service worker for offline support
+// Service worker for offline support with auto-update
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').catch(() => {
+        navigator.serviceWorker.register('sw.js').then((registration) => {
+            // Check for updates immediately
+            registration.update();
+            
+            // When a new service worker is installed, reload to activate it
+            registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'activated') {
+                        // New version available, reload to get it
+                        window.location.reload();
+                    }
+                });
+            });
+        }).catch(() => {
             // Service worker registration failed - app will still work online
         });
+    });
+    
+    // Also check for updates when app becomes visible (e.g., switching back to it)
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.ready.then((registration) => {
+                registration.update();
+            });
+        }
     });
 }
