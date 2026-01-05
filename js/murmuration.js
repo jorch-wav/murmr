@@ -488,7 +488,7 @@ class Murmuration {
     // =====================================================
     
     setBoidCount(count) {
-        this.targetBirdCount = Math.max(1, Math.min(2500, count));
+        this.targetBirdCount = Math.max(1, Math.min(5000, count));
     }
     
     getBoidCount() {
@@ -536,26 +536,26 @@ class Murmuration {
     triggerDeath(callback) {
         if (!this.velocityUniforms) return;
         
-        // Animate death mode from 0 to 1 over 2 seconds
-        const duration = 2000;
+        // Animate death mode from 0 to 1 over 4 seconds for full fall
+        const duration = 4000;
         const startTime = performance.now();
         
         const animateDeath = () => {
             const elapsed = performance.now() - startTime;
             const progress = Math.min(1, elapsed / duration);
             
-            // Ease in - starts slow, accelerates
-            const eased = progress * progress;
+            // Ease in - starts slow, accelerates like gravity
+            const eased = progress * progress * progress;
             this.velocityUniforms['deathMode'].value = eased;
             
             if (progress < 1) {
                 requestAnimationFrame(animateDeath);
             } else {
-                // Death complete - reset and callback
+                // Death complete - wait for birds to fall off screen, then reset
                 setTimeout(() => {
                     this.velocityUniforms['deathMode'].value = 0;
                     if (callback) callback();
-                }, 500);
+                }, 2000);
             }
         };
         
