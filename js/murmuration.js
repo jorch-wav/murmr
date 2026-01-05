@@ -351,6 +351,7 @@ class Murmuration {
         this.velocityUniforms['cohesionDistance'] = { value: 20.0 };
         this.velocityUniforms['predator'] = { value: new THREE.Vector3() };
         this.velocityUniforms['deathMode'] = { value: 0.0 };
+        this.velocityUniforms['attractMode'] = { value: 0.0 };
         this.velocityVariable.material.defines.BOUNDS = this.BOUNDS.toFixed(2);
 
         this.velocityVariable.wrapS = THREE.RepeatWrapping;
@@ -571,14 +572,29 @@ class Murmuration {
         
         const canvas = this.renderer.domElement;
         
-        // Touch - pinch zoom and tap to scatter
+        // Track touch hold state
+        this.touchHoldTimer = null;
+        this.isHolding = false;
+        
+        // Touch - pinch zoom, tap to scatter, hold to attract
         canvas.addEventListener('touchstart', (e) => {
             if (e.touches.length === 2) {
                 const dx = e.touches[0].clientX - e.touches[1].clientX;
                 const dy = e.touches[0].clientY - e.touches[1].clientY;
                 this.lastPinchDistance = Math.sqrt(dx * dx + dy * dy);
+                this.isHolding = false;
+                clearTimeout(this.touchHoldTimer);
             } else if (e.touches.length === 1) {
+                // Start scatter immediately
                 this.scatter(e.touches[0].clientX, e.touches[0].clientY);
+                
+                // After 200ms of holding, switch to attract mode
+                this.touchHoldTimer = setTimeout(() => {
+                    this.isHolding = true;
+                    if (this.velocityUniforms) {
+                        this.velocityUniforms['attractMode'].value = 1.0;
+                    }
+                }, 200);
             }
         }, { passive: true });
         
@@ -594,17 +610,55 @@ class Murmuration {
                 }
                 this.lastPinchDistance = distance;
             } else if (e.touches.length === 1) {
-                this.scatter(e.touches[0].clientX, e.touches[0].clientY);
+                // Update position - attract or scatter based on hold state
+                this.mouseX = e.touches[0].clientX - window.innerWidth / 2;
+                this.mouseY = e.touches[0].clientY - window.innerHeight / 2;
             }
         }, { passive: true });
         
         canvas.addEventListener('touchend', () => {
             this.lastPinchDistance = 0;
+            this.isHolding = false;
+            clearTimeout(this.touchHoldTimer);
+            // Reset attract mode
+            if (this.velocityUniforms) {
+                this.velocityUniforms['attractMode'].value = 0.0;
+            }
+            // Reset mouse position to far away
+            this.mouseX = 10000;
+            this.mouseY = 10000;
         }, { passive: true });
         
-        // Mouse for desktop
-        canvas.addEventListener('pointermove', (e) => {
+        // Mouse for desktop - hold to attract
+        let mouseDown = false;
+        let mouseHoldTimer = null;
+        
+        canvas.addEventListener('pointerdown', (e) => {
+            mouseDown = true;
             this.scatter(e.clientX, e.clientY);
+            
+            mouseHoldTimer = setTimeout(() => {
+                if (mouseDown && this.velocityUniforms) {
+                    this.velocityUniforms['attractMode'].value = 1.0;
+                }
+            }, 200);
+        });
+        
+        canvas.addEventListener('pointermove', (e) => {
+            if (mouseDown) {
+                this.mouseX = e.clientX - window.innerWidth / 2;
+                this.mouseY = e.clientY - window.innerHeight / 2;
+            }
+        });
+        
+        canvas.addEventListener('pointerup', () => {
+            mouseDown = false;
+            clearTimeout(mouseHoldTimer);
+            if (this.velocityUniforms) {
+                this.velocityUniforms['attractMode'].value = 0.0;
+            }
+            this.mouseX = 10000;
+            this.mouseY = 10000;
         });
         
         canvas.addEventListener('wheel', (e) => {

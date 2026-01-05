@@ -44,6 +44,7 @@
         uniform float cohesionDistance;
         uniform vec3 predator;
         uniform float deathMode;
+        uniform float attractMode;
         uniform sampler2D texturePosition;
         uniform sampler2D textureVelocity;
 
@@ -92,8 +93,20 @@
 
             if ( dist < preyRadius ) {
                 f = ( distSquared / preyRadiusSq - 1.0 ) * delta * 100.;
-                velocity += normalize( dir ) * f;
+                // attractMode: 0 = repel (scare), 1 = attract (follow)
+                if ( attractMode > 0.5 ) {
+                    // Attract: fly toward the touch point
+                    velocity += normalize( dir ) * abs(f) * 0.5;
+                } else {
+                    // Repel: fly away from touch point (original behavior)
+                    velocity += normalize( dir ) * f;
+                }
                 limit += 5.0;
+            }
+            
+            // When attracting, also pull birds from further away
+            if ( attractMode > 0.5 && dist < preyRadius * 3.0 ) {
+                velocity += normalize( dir ) * delta * 20.0;
             }
 
             // Attract to center
