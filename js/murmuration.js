@@ -468,7 +468,7 @@ class Murmuration {
     }
     
     changeBirdCount(newWidth) {
-        newWidth = Math.max(1, Math.min(50, newWidth));
+        newWidth = Math.max(1, Math.min(71, newWidth));
         if (newWidth === this.WIDTH) return;
         
         this.WIDTH = newWidth;
