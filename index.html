@@ -156,11 +156,16 @@
 
             // Death mode: birds stop flocking and dive down fast
             if ( deathMode > 0.0 ) {
-                // Strong downward dive velocity
+                // Strong downward dive velocity with chaotic spread
                 vec3 deathVelocity = vec3( 0.0, -50.0, 0.0 );
-                // Add some random spread based on position for natural look
-                deathVelocity.x = sin( selfPosition.x * 0.05 ) * 3.0;
-                deathVelocity.z = cos( selfPosition.z * 0.05 ) * 3.0;
+                // Use position-based noise for random tumbling
+                float noise1 = fract(sin(dot(selfPosition.xy, vec2(12.9898, 78.233))) * 43758.5453);
+                float noise2 = fract(sin(dot(selfPosition.yz, vec2(39.346, 11.135))) * 43758.5453);
+                float noise3 = fract(sin(dot(selfPosition.xz, vec2(73.156, 52.235))) * 43758.5453);
+                // Add random horizontal drift and fall speed variation
+                deathVelocity.x = (noise1 - 0.5) * 20.0;
+                deathVelocity.z = (noise2 - 0.5) * 20.0;
+                deathVelocity.y = -30.0 - noise3 * 40.0; // Vary fall speed between -30 and -70
                 velocity = mix( velocity, deathVelocity, deathMode );
             }
 
