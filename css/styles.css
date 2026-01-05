@@ -27,7 +27,7 @@
 }
 
 /* 8-bit Pixel Icons - Game Boy Style (Monochrome) */
-.pixel-smoke, .pixel-coin, .pixel-chart, .pixel-moon, .pixel-sun {
+.pixel-smoke, .pixel-coin, .pixel-chart, .pixel-moon, .pixel-sun, .pixel-palette {
     display: inline-block;
     width: 24px;
     height: 24px;
@@ -144,6 +144,25 @@
     height: 2px;
     top: 4px;
     left: -7px;
+}
+
+/* Palette icon - three dots/circles in a row */
+.pixel-palette {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+.pixel-palette::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: currentColor;
+    border-radius: 50%;
+    box-shadow: 
+        9px 0 0 0 currentColor,
+        -9px 0 0 0 currentColor;
 }
 
 html, body {

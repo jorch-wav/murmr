@@ -328,16 +328,16 @@ class MurmrApp {
         if (this.themeMode === 'light') {
             // Light mode: light sky bg, black birds
             // Button shows: moon icon, "Dark Mode" (what comes next)
-            iconEl.textContent = '🌙';
+            iconEl.className = 'icon pixel-moon';
             textEl.textContent = 'Dark Mode';
             if (this.murmuration) {
                 this.murmuration.setTheme('light');
             }
         } else if (this.themeMode === 'dark') {
             // Dark mode: black bg, white birds
-            // Button shows: rainbow icon, "Colour Mode" (what comes next)
+            // Button shows: palette icon, "Colour Mode" (what comes next)
             document.body.classList.add('dark-mode');
-            iconEl.textContent = '🌈';
+            iconEl.className = 'icon pixel-palette';
             textEl.textContent = 'Colour Mode';
             if (this.murmuration) {
                 this.murmuration.setTheme('dark');
@@ -346,7 +346,7 @@ class MurmrApp {
             // Color mode: dark blue bg, rainbow birds
             // Button shows: sun icon, "Light Mode" (what comes next)
             document.body.classList.add('color-mode');
-            iconEl.textContent = '☀️';
+            iconEl.className = 'icon pixel-sun';
             textEl.textContent = 'Light Mode';
             if (this.murmuration) {
                 this.murmuration.setTheme('color');
