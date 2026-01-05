@@ -290,9 +290,10 @@ class MurmrApp {
     }
     
     applyTheme() {
+        const iconEl = this.themeBtn.querySelector('.icon');
         if (this.isDarkMode) {
             document.body.classList.add('dark-mode');
-            this.themeBtn.querySelector('.icon').textContent = '🌕';
+            iconEl.className = 'icon pixel-sun';
             this.themeBtn.querySelector('.text').textContent = 'Light Mode';
             // Update murmuration background and bird color
             if (this.murmuration) {
@@ -300,7 +301,7 @@ class MurmrApp {
             }
         } else {
             document.body.classList.remove('dark-mode');
-            this.themeBtn.querySelector('.icon').textContent = '🌑';
+            iconEl.className = 'icon pixel-moon';
             this.themeBtn.querySelector('.text').textContent = 'Dark Mode';
             // Update murmuration background and bird color
             if (this.murmuration) {
