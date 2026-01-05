@@ -536,8 +536,8 @@ class Murmuration {
     triggerDeath(callback) {
         if (!this.velocityUniforms) return;
         
-        // Animate death mode from 0 to 1 over 4 seconds for full fall
-        const duration = 4000;
+        // Animate death mode from 0 to 1 over 8 seconds for full fall off screen
+        const duration = 8000;
         const startTime = performance.now();
         
         const animateDeath = () => {
@@ -545,7 +545,7 @@ class Murmuration {
             const progress = Math.min(1, elapsed / duration);
             
             // Ease in - starts slow, accelerates like gravity
-            const eased = progress * progress * progress;
+            const eased = progress * progress;
             this.velocityUniforms['deathMode'].value = eased;
             
             if (progress < 1) {
@@ -555,7 +555,7 @@ class Murmuration {
                 setTimeout(() => {
                     this.velocityUniforms['deathMode'].value = 0;
                     if (callback) callback();
-                }, 2000);
+                }, 3000);
             }
         };
         

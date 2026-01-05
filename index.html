@@ -141,13 +141,13 @@
                 velocity = normalize( velocity ) * limit;
             }
 
-            // Death mode: birds stop flocking and dive down
+            // Death mode: birds stop flocking and dive down fast
             if ( deathMode > 0.0 ) {
-                // Gradually take over velocity with downward dive
-                vec3 deathVelocity = vec3( 0.0, -25.0, 0.0 );
-                // Add some random spread based on position
-                deathVelocity.x = sin( selfPosition.x * 0.1 ) * 2.0;
-                deathVelocity.z = cos( selfPosition.z * 0.1 ) * 2.0;
+                // Strong downward dive velocity
+                vec3 deathVelocity = vec3( 0.0, -50.0, 0.0 );
+                // Add some random spread based on position for natural look
+                deathVelocity.x = sin( selfPosition.x * 0.05 ) * 3.0;
+                deathVelocity.z = cos( selfPosition.z * 0.05 ) * 3.0;
                 velocity = mix( velocity, deathVelocity, deathMode );
             }
 
