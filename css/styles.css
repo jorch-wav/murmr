@@ -424,7 +424,7 @@ body.dark-mode #menu-toggle {
 .tab-container {
     display: flex;
     gap: 8px;
-    padding: 5px 20px 20px;
+    padding: 15px 20px 20px;
     overflow-x: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
