@@ -10,6 +10,8 @@ class StatsView {
         this.periodOffset = 0; // 0 = current, -1 = previous, etc.
         this.chart = null;
         this.chartCtx = null;
+        // Spending toggle: false = period view, true = monthly view
+        this.spendingShowMonthly = localStorage.getItem('murmr_spending_monthly') === 'true';
         
         this.init();
     }
@@ -25,6 +27,13 @@ class StatsView {
     }
     
     bindEvents() {
+        // Spending card toggle
+        document.getElementById('spending-card')?.addEventListener('click', () => {
+            this.spendingShowMonthly = !this.spendingShowMonthly;
+            localStorage.setItem('murmr_spending_monthly', this.spendingShowMonthly);
+            this.update();
+        });
+        
         // Tab switching
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -159,22 +168,41 @@ class StatsView {
                 sessionChange.className = 'stat-change';
             }
             
-            // Update spending card (monthly for day/week/month, yearly for year)
+            // Update spending card - toggleable between period and monthly view
             const spendingLabel = document.getElementById('spending-label');
-            if (spendingLabel) {
-                spendingLabel.textContent = stats.spendingCardLabel || 'SPENDING';
-            }
-            const spendingAmount = stats.spendingCardAmount || 0;
-            document.getElementById('spending-stat').textContent = '$' + spendingAmount.toFixed(2);
+            const spendingCard = document.getElementById('spending-card');
             const spendingChange = document.getElementById('spending-change');
-            const spendingCardChange = stats.spendingCardChange || 0;
-            if (spendingCardChange !== 0) {
-                const compareLabel = stats.period === 'yearly' ? 'vs last year' : 'vs last month';
-                spendingChange.textContent = `${spendingCardChange > 0 ? '+' : ''}$${spendingCardChange.toFixed(2)} ${compareLabel}`;
-                spendingChange.className = 'stat-change ' + (spendingCardChange <= 0 ? 'positive' : 'negative');
+            
+            if (this.spendingShowMonthly) {
+                // Show monthly spending
+                if (spendingLabel) spendingLabel.textContent = 'Spent This Month';
+                document.getElementById('spending-stat').textContent = '$' + (stats.monthlySpending || 0).toFixed(2);
+                const monthlyChange = stats.monthlySpendingChange || 0;
+                if (monthlyChange !== 0) {
+                    spendingChange.textContent = `${monthlyChange > 0 ? '+' : ''}$${monthlyChange.toFixed(2)} vs last month`;
+                    spendingChange.className = 'stat-change ' + (monthlyChange <= 0 ? 'positive' : 'negative');
+                } else {
+                    spendingChange.textContent = 'Tap to see period';
+                    spendingChange.className = 'stat-change';
+                }
             } else {
-                spendingChange.textContent = 'No change';
-                spendingChange.className = 'stat-change';
+                // Show period spending
+                const periodSpendingLabels = {
+                    'daily': 'Spent Today',
+                    'weekly': 'Spent This Week',
+                    'monthly': 'Spent This Month',
+                    'yearly': 'Spent This Year'
+                };
+                if (spendingLabel) spendingLabel.textContent = periodSpendingLabels[stats.period] || 'Spending';
+                document.getElementById('spending-stat').textContent = '$' + (stats.spending || 0).toFixed(2);
+                const spendingChangeVal = stats.spendingChange || 0;
+                if (spendingChangeVal !== 0) {
+                    spendingChange.textContent = `${spendingChangeVal > 0 ? '+' : ''}$${spendingChangeVal.toFixed(2)} vs prev`;
+                    spendingChange.className = 'stat-change ' + (spendingChangeVal <= 0 ? 'positive' : 'negative');
+                } else {
+                    spendingChange.textContent = 'Tap for monthly';
+                    spendingChange.className = 'stat-change';
+                }
             }
             
             // Update longest streak
@@ -183,12 +211,6 @@ class StatsView {
             // Update time since last session (and start live counter)
             this.updateTimeSinceLast();
             this.startSinceLastCounter();
-            
-            // Update average time between
-            if (stats.avgTimeBetween) {
-                document.getElementById('average-stat').textContent = this.storage.formatDuration(stats.avgTimeBetween);
-            } else {
-                document.getElementById('average-stat').textContent = '--';
             }
             
             // Update chart title with period label

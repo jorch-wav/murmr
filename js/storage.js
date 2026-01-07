@@ -473,9 +473,8 @@ class MurmrStorage {
             sessionChange,
             spending: currentSpending,
             spendingChange,
-            spendingCardAmount,
-            spendingCardChange,
-            spendingCardLabel,
+            monthlySpending: spendingCardAmount,
+            monthlySpendingChange: spendingCardChange,
             longestStreak,
             avgTimeBetween,
             chartData: this.getChartData(period, startTime, endTime)
