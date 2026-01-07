@@ -352,7 +352,7 @@ class StatsView {
         ctx.clearRect(0, 0, width, height);
         
         // Chart dimensions
-        const padding = { top: 10, right: 10, bottom: 30, left: 10 };
+        const padding = { top: 20, right: 10, bottom: 30, left: 10 };
         const chartWidth = width - padding.left - padding.right;
         const chartHeight = height - padding.top - padding.bottom;
         
@@ -371,11 +371,15 @@ class StatsView {
             ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
             ctx.font = '14px -apple-system, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('No sessions logged yet', width / 2, height / 2);
+            ctx.fillText('No sessions in this period', width / 2, height / 2);
             return;
         }
         
-        const barWidth = Math.min(30, (chartWidth / barCount) * 0.7);
+        // For daily view (24 bars), use thinner bars
+        const isDaily = barCount === 24;
+        const barWidth = isDaily 
+            ? Math.max(6, (chartWidth / barCount) * 0.6)
+            : Math.min(30, (chartWidth / barCount) * 0.7);
         const barGap = (chartWidth - (barWidth * barCount)) / (barCount + 1);
         
         // Find max value
@@ -403,16 +407,37 @@ class StatsView {
                 }
                 ctx.fill();
                 
-                // Draw count on bar
+                // Draw label above bar - show time for daily, count for others
                 ctx.fillStyle = '#333';
-                ctx.font = '10px -apple-system, sans-serif';
+                ctx.font = 'bold 9px -apple-system, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText(data.sessionCounts[i], x + barWidth / 2, y - 4);
+                
+                if (isDaily) {
+                    // For daily view, show the hour label above the bar
+                    ctx.fillText(data.labels[i], x + barWidth / 2, y - 4);
+                } else {
+                    // For other periods, show count
+                    ctx.fillText(data.sessionCounts[i], x + barWidth / 2, y - 4);
+                }
             }
             
-            // Draw label (only every 4th label to avoid crowding)
-            const labelInterval = Math.max(1, Math.ceil(barCount / 6));
-            if (barCount <= 6 || i % labelInterval === 0) {
+            // Draw x-axis labels
+            let showLabel = false;
+            if (isDaily) {
+                // For daily: show every 6 hours (12am, 6am, 12pm, 6pm)
+                showLabel = i % 6 === 0;
+            } else if (barCount <= 7) {
+                // Weekly: show all
+                showLabel = true;
+            } else if (barCount <= 12) {
+                // Yearly (months): show all
+                showLabel = true;
+            } else {
+                // Monthly (days): show every 5th
+                showLabel = (i + 1) % 5 === 0 || i === 0;
+            }
+            
+            if (showLabel) {
                 ctx.fillStyle = '#666';
                 ctx.font = '9px -apple-system, sans-serif';
                 ctx.textAlign = 'center';
