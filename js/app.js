@@ -273,11 +273,13 @@ class MurmrApp {
     logSession() {
         this.hideModals();
         
-        // Trigger death animation, then reset
+        // Reset storage and display immediately
+        this.storage.logSession();
+        this.updateDisplay();
+        
+        // Trigger death animation (visual only, resets birds when done)
         this.murmuration.triggerDeath(() => {
-            this.storage.logSession();
             this.murmuration.reset();
-            this.updateDisplay();
         });
     }
     
