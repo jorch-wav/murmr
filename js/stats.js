@@ -122,29 +122,15 @@ class StatsView {
     
     update() {
         try {
+            // Debug panel
             const debugPanel = document.getElementById('debug-panel');
             const allSessions = this.storage.getSessions();
             
-            // Get actual week boundaries
-            const now = new Date();
-            const weekStart = this.storage.getStartOfWeek(now);
-            const weekEnd = Date.now();
-            
-            // Filter manually to check
-            const sessionsThisWeek = allSessions.filter(s => s.timestamp >= weekStart && s.timestamp <= weekEnd);
-            
-            // Show first session timestamp vs week start
-            const firstTs = allSessions.length > 0 ? allSessions[0].timestamp : 0;
-            
-            let debugHtml = `Total: ${allSessions.length}<br>`;
-            debugHtml += `WeekStart: ${new Date(weekStart).toLocaleString()}<br>`;
-            debugHtml += `FirstSession: ${new Date(firstTs).toLocaleString()}<br>`;
-            debugHtml += `First >= WeekStart? ${firstTs >= weekStart}<br>`;
-            debugHtml += `<b>In week: ${sessionsThisWeek.length}</b>`;
-            
-            if (debugPanel) debugPanel.innerHTML = debugHtml;
-            
             const stats = this.storage.getStats(this.currentPeriod, this.periodOffset);
+            
+            if (debugPanel) {
+                debugPanel.innerHTML = `Total: ${allSessions.length} | Period sessions: ${stats.sessions}`;
+            }
             
             // Update period label/title
             document.getElementById('chart-title').textContent = stats.periodLabel;

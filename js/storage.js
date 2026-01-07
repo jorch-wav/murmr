@@ -416,22 +416,10 @@ class MurmrStorage {
         const { startTime, endTime } = this.getPeriodBoundaries(period, offset);
         const { startTime: prevStart, endTime: prevEnd } = this.getPeriodBoundaries(period, offset - 1);
         
-        // Debug logging
-        console.log('getStats boundaries:', {
-            period,
-            offset,
-            startTime,
-            endTime,
-            startDate: new Date(startTime).toString(),
-            endDate: new Date(endTime).toString()
-        });
-        
         // Current period stats
         const currentSessions = this.getSessionsInRange(startTime, endTime);
         const currentExpenses = this.getExpensesInRange(startTime, endTime);
         const currentSpending = currentExpenses.reduce((sum, e) => sum + e.amount, 0);
-        
-        console.log('Sessions in range:', currentSessions.length, currentSessions);
         
         // Previous period stats
         const previousSessions = this.getSessionsInRange(prevStart, prevEnd);
@@ -442,51 +430,24 @@ class MurmrStorage {
         const sessionChange = currentSessions.length - previousSessions.length;
         const spendingChange = currentSpending - previousSpending;
         
-        // ========================================
-        // Spending card: monthly for day/week/month, yearly for year
-        // ========================================
-        let spendingCardAmount, spendingCardChange, spendingCardLabel;
+        // Monthly spending (for the spending card)
+        const now = new Date();
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1, 0, 0, 0, 0);
+        const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0, 0);
+        const prevMonthEnd = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
         
-        if (period === 'yearly') {
-            // For year view: show this year's spending vs last year
-            const yearStart = this.getStartOfYear(new Date());
-            yearStart.setFullYear(yearStart.getFullYear() + offset);
-            const yearEnd = new Date(yearStart);
-            yearEnd.setFullYear(yearEnd.getFullYear() + 1);
-            
-            const prevYearStart = new Date(yearStart);
-            prevYearStart.setFullYear(prevYearStart.getFullYear() - 1);
-            const prevYearEnd = new Date(yearStart);
-            
-            const thisYearExpenses = this.getExpensesInRange(yearStart.getTime(), yearEnd.getTime());
-            const lastYearExpenses = this.getExpensesInRange(prevYearStart.getTime(), prevYearEnd.getTime());
-            
-            spendingCardAmount = thisYearExpenses.reduce((sum, e) => sum + e.amount, 0);
-            const lastYearAmount = lastYearExpenses.reduce((sum, e) => sum + e.amount, 0);
-            spendingCardChange = spendingCardAmount - lastYearAmount;
-            spendingCardLabel = offset === 0 ? 'Spent This Year' : `Spent ${yearStart.getFullYear()}`;
-        } else {
-            // For day/week/month view: show this month's spending vs last month
-            const monthStart = this.getStartOfMonth(new Date());
-            const monthEnd = new Date(monthStart);
-            monthEnd.setMonth(monthEnd.getMonth() + 1);
-            
-            const prevMonthStart = new Date(monthStart);
-            prevMonthStart.setMonth(prevMonthStart.getMonth() - 1);
-            const prevMonthEnd = new Date(monthStart);
-            
-            const thisMonthExpenses = this.getExpensesInRange(monthStart.getTime(), monthEnd.getTime());
-            const lastMonthExpenses = this.getExpensesInRange(prevMonthStart.getTime(), prevMonthEnd.getTime());
-            
-            spendingCardAmount = thisMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
-            const lastMonthAmount = lastMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
-            spendingCardChange = spendingCardAmount - lastMonthAmount;
-            spendingCardLabel = 'Spent This Month';
-        }
+        const thisMonthExpenses = this.getExpensesInRange(monthStart.getTime(), monthEnd.getTime());
+        const lastMonthExpenses = this.getExpensesInRange(prevMonthStart.getTime(), prevMonthEnd.getTime());
+        
+        const spendingCardAmount = thisMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
+        const lastMonthAmount = lastMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
+        const spendingCardChange = spendingCardAmount - lastMonthAmount;
+        const spendingCardLabel = 'Spent This Month';
         
         // Calculate longest streak
         const allSessions = this.getSessions().sort((a, b) => a.timestamp - b.timestamp);
-        let longestStreak = this.getStreakDuration(); // Current streak might be longest
+        let longestStreak = this.getStreakDuration();
         
         for (let i = 0; i < allSessions.length; i++) {
             if (allSessions[i].previousStreak && allSessions[i].previousStreak > longestStreak) {
@@ -512,7 +473,6 @@ class MurmrStorage {
             sessionChange,
             spending: currentSpending,
             spendingChange,
-            // New spending card data
             spendingCardAmount,
             spendingCardChange,
             spendingCardLabel,
