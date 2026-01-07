@@ -452,11 +452,11 @@ class StatsView {
             return;
         }
         
-        // Thicker bars for all views
+        // Much thicker bars - use almost all available width
         const isDaily = barCount === 24;
         const barWidth = isDaily 
-            ? Math.max(8, (chartWidth / barCount) * 0.75)
-            : Math.min(35, (chartWidth / barCount) * 0.75);
+            ? (chartWidth / barCount) * 0.85
+            : Math.min(40, (chartWidth / barCount) * 0.8);
         const barGap = (chartWidth - (barWidth * barCount)) / (barCount + 1);
         
         // Find max value
