@@ -126,10 +126,15 @@ class StatsView {
             const debugPanel = document.getElementById('debug-panel');
             const allSessions = this.storage.getSessions();
             
+            // Debug: check period boundaries
+            const bounds = this.storage.getPeriodBoundaries(this.currentPeriod, this.periodOffset);
+            const firstTs = allSessions.length > 0 ? allSessions[0].timestamp : 0;
+            const inRange = allSessions.filter(s => s.timestamp >= bounds.startTime && s.timestamp <= bounds.endTime);
+            
             const stats = this.storage.getStats(this.currentPeriod, this.periodOffset);
             
             if (debugPanel) {
-                debugPanel.innerHTML = `Total: ${allSessions.length} | Period sessions: ${stats.sessions}`;
+                debugPanel.innerHTML = `Total:${allSessions.length} InRange:${inRange.length} Start:${new Date(bounds.startTime).toLocaleDateString()} First:${new Date(firstTs).toLocaleDateString()}`;
             }
             
             // Update period label/title
