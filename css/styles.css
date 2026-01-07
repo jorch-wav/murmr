@@ -672,7 +672,6 @@ body.dark-mode #menu-toggle {
     flex-direction: row;
     gap: 12px;
     margin-top: 10px;
-    padding-bottom: calc(var(--safe-area-bottom) + 30px);
 }
 
 .retro-btn {
@@ -718,7 +717,8 @@ body.dark-mode .retro-btn {
     background: rgba(255,255,255,0.4);
     border-radius: 16px;
     padding: 15px;
-    margin-top: 5px;
+    margin-top: 15px;
+    margin-bottom: calc(var(--safe-area-bottom) + 20px);
 }
 
 .logs-section h3 {
