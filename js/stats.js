@@ -74,7 +74,6 @@ class StatsView {
         
         // Update chart title
         const periodLabels = {
-            hourly: 'Last Hour',
             daily: 'Last 24 Hours',
             weekly: 'Last 7 Days',
             monthly: 'Last 30 Days',
