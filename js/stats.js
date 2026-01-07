@@ -211,7 +211,6 @@ class StatsView {
             // Update time since last session (and start live counter)
             this.updateTimeSinceLast();
             this.startSinceLastCounter();
-            }
             
             // Update chart title with period label
             document.getElementById('chart-title').textContent = stats.periodLabel || 'Activity';
