@@ -121,67 +121,73 @@ class StatsView {
     }
     
     update() {
-        const stats = this.storage.getStats(this.currentPeriod, this.periodOffset);
-        
-        // Update period label/title
-        document.getElementById('chart-title').textContent = stats.periodLabel;
-        
-        // Show/hide next button (can't go to future)
-        const nextBtn = document.getElementById('period-next');
-        if (nextBtn) {
-            nextBtn.style.opacity = this.periodOffset < 0 ? '1' : '0.3';
-            nextBtn.style.pointerEvents = this.periodOffset < 0 ? 'auto' : 'none';
+        try {
+            const stats = this.storage.getStats(this.currentPeriod, this.periodOffset);
+            
+            // Update period label/title
+            document.getElementById('chart-title').textContent = stats.periodLabel;
+            
+            // Show/hide next button (can't go to future)
+            const nextBtn = document.getElementById('period-next');
+            if (nextBtn) {
+                nextBtn.style.opacity = this.periodOffset < 0 ? '1' : '0.3';
+                nextBtn.style.pointerEvents = this.periodOffset < 0 ? 'auto' : 'none';
+            }
+            
+            // Update session count
+            document.getElementById('sessions-stat').textContent = stats.sessions || 0;
+            const sessionChange = document.getElementById('sessions-change');
+            if (stats.sessionChange && stats.sessionChange !== 0) {
+                sessionChange.textContent = `${stats.sessionChange > 0 ? '+' : ''}${stats.sessionChange} vs prev`;
+                sessionChange.className = 'stat-change ' + (stats.sessionChange <= 0 ? 'positive' : 'negative');
+            } else {
+                sessionChange.textContent = 'No change';
+                sessionChange.className = 'stat-change';
+            }
+            
+            // Update spending card (monthly for day/week/month, yearly for year)
+            const spendingLabel = document.querySelector('.stat-card:nth-child(2) h3');
+            if (spendingLabel) {
+                spendingLabel.textContent = stats.spendingCardLabel || 'SPENDING';
+            }
+            const spendingAmount = stats.spendingCardAmount || 0;
+            document.getElementById('spending-stat').textContent = '$' + spendingAmount.toFixed(2);
+            const spendingChange = document.getElementById('spending-change');
+            const spendingCardChange = stats.spendingCardChange || 0;
+            if (spendingCardChange !== 0) {
+                const compareLabel = stats.period === 'yearly' ? 'vs last year' : 'vs last month';
+                spendingChange.textContent = `${spendingCardChange > 0 ? '+' : ''}$${spendingCardChange.toFixed(2)} ${compareLabel}`;
+                spendingChange.className = 'stat-change ' + (spendingCardChange <= 0 ? 'positive' : 'negative');
+            } else {
+                spendingChange.textContent = 'No change';
+                spendingChange.className = 'stat-change';
+            }
+            
+            // Update longest streak
+            document.getElementById('streak-stat').textContent = this.storage.formatDuration(stats.longestStreak);
+            
+            // Update time since last session (and start live counter)
+            this.updateTimeSinceLast();
+            this.startSinceLastCounter();
+            
+            // Update average time between
+            if (stats.avgTimeBetween) {
+                document.getElementById('average-stat').textContent = this.storage.formatDuration(stats.avgTimeBetween);
+            } else {
+                document.getElementById('average-stat').textContent = '--';
+            }
+            
+            // Update chart title with period label
+            document.getElementById('chart-title').textContent = stats.periodLabel || 'Activity';
+            
+            // Render chart
+            this.renderChart(stats.chartData);
+            
+            // Render combined history
+            this.renderHistory();
+        } catch (error) {
+            console.error('Stats update error:', error);
         }
-        
-        // Update session count
-        document.getElementById('sessions-stat').textContent = stats.sessions;
-        const sessionChange = document.getElementById('sessions-change');
-        if (stats.sessionChange !== 0) {
-            sessionChange.textContent = `${stats.sessionChange > 0 ? '+' : ''}${stats.sessionChange} vs prev`;
-            sessionChange.className = 'stat-change ' + (stats.sessionChange <= 0 ? 'positive' : 'negative');
-        } else {
-            sessionChange.textContent = 'No change';
-            sessionChange.className = 'stat-change';
-        }
-        
-        // Update spending card (monthly for day/week/month, yearly for year)
-        const spendingLabel = document.querySelector('.stat-card:nth-child(2) h3');
-        if (spendingLabel) {
-            spendingLabel.textContent = stats.spendingCardLabel || 'SPENDING';
-        }
-        document.getElementById('spending-stat').textContent = '$' + stats.spendingCardAmount.toFixed(2);
-        const spendingChange = document.getElementById('spending-change');
-        if (stats.spendingCardChange !== 0) {
-            const compareLabel = stats.period === 'yearly' ? 'vs last year' : 'vs last month';
-            spendingChange.textContent = `${stats.spendingCardChange > 0 ? '+' : ''}$${stats.spendingCardChange.toFixed(2)} ${compareLabel}`;
-            spendingChange.className = 'stat-change ' + (stats.spendingCardChange <= 0 ? 'positive' : 'negative');
-        } else {
-            spendingChange.textContent = 'No change';
-            spendingChange.className = 'stat-change';
-        }
-        
-        // Update longest streak
-        document.getElementById('streak-stat').textContent = this.storage.formatDuration(stats.longestStreak);
-        
-        // Update time since last session (and start live counter)
-        this.updateTimeSinceLast();
-        this.startSinceLastCounter();
-        
-        // Update average time between
-        if (stats.avgTimeBetween) {
-            document.getElementById('average-stat').textContent = this.storage.formatDuration(stats.avgTimeBetween);
-        } else {
-            document.getElementById('average-stat').textContent = '--';
-        }
-        
-        // Update chart title with period label
-        document.getElementById('chart-title').textContent = stats.periodLabel || 'Activity';
-        
-        // Render chart
-        this.renderChart(stats.chartData);
-        
-        // Render combined history
-        this.renderHistory();
     }
     
     updateTimeSinceLast() {
