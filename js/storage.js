@@ -617,6 +617,32 @@ class MurmrStorage {
         localStorage.removeItem(this.KEYS.STREAK_START);
         this.init();
     }
+    
+    // Debug function to check stored data
+    debug() {
+        const sessions = this.getSessions();
+        const expenses = this.getExpenses();
+        const streakStart = this.getStreakStart();
+        
+        console.log('=== MURMR DEBUG ===');
+        console.log('Sessions stored:', sessions.length);
+        console.log('Sessions:', sessions);
+        console.log('Expenses stored:', expenses.length);
+        console.log('Expenses:', expenses);
+        console.log('Streak start:', streakStart, new Date(streakStart));
+        console.log('Raw localStorage:');
+        console.log('  murmr_sessions:', localStorage.getItem('murmr_sessions'));
+        console.log('  murmr_expenses:', localStorage.getItem('murmr_expenses'));
+        console.log('  murmr_streak_start:', localStorage.getItem('murmr_streak_start'));
+        
+        return {
+            sessions,
+            expenses,
+            streakStart,
+            sessionCount: sessions.length,
+            expenseCount: expenses.length
+        };
+    }
 }
 
 // Export for use in app
