@@ -131,13 +131,22 @@ class MurmrStorage {
     }
     
     // Log session at a specific timestamp (retroactive)
+    // This resets the streak if the retroactive session is more recent than current streak start
     logSessionAt(timestamp) {
         const sessions = this.getSessions();
+        const currentStreakStart = this.getStreakStart();
+        
+        // Calculate previous streak duration at time of this session
+        let previousStreak = 0;
+        if (currentStreakStart && timestamp > currentStreakStart) {
+            // This session breaks the current streak
+            previousStreak = timestamp - currentStreakStart;
+        }
         
         sessions.push({
             id: timestamp,
             timestamp: timestamp,
-            previousStreak: 0,
+            previousStreak: previousStreak,
             retroactive: true
         });
         
@@ -145,6 +154,12 @@ class MurmrStorage {
         sessions.sort((a, b) => a.timestamp - b.timestamp);
         
         this.saveSessions(sessions);
+        
+        // Update streak start: find the most recent session timestamp
+        // The streak starts from the most recent session
+        const mostRecentSession = sessions[sessions.length - 1];
+        this.setStreakStart(mostRecentSession.timestamp);
+        
         return sessions.find(s => s.timestamp === timestamp);
     }
     
@@ -213,6 +228,13 @@ class MurmrStorage {
         if (index >= 0 && index < sessions.length) {
             sessions.splice(index, 1);
             this.saveSessions(sessions);
+            
+            // Update streak start to most recent session (or reset if no sessions)
+            if (sessions.length > 0) {
+                const mostRecentSession = sessions[sessions.length - 1];
+                this.setStreakStart(mostRecentSession.timestamp);
+            }
+            // If no sessions left, streak remains as is (from beginning of time)
         }
     }
     
@@ -223,6 +245,10 @@ class MurmrStorage {
             sessions[index].timestamp = timestamp;
             sessions.sort((a, b) => a.timestamp - b.timestamp);
             this.saveSessions(sessions);
+            
+            // Update streak start to most recent session
+            const mostRecentSession = sessions[sessions.length - 1];
+            this.setStreakStart(mostRecentSession.timestamp);
         }
     }
     
