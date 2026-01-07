@@ -1,0 +1,189 @@
+================================================================================
+MURMR - Smoking/Spending Tracker with 3D Boids Murmuration
+Chatbot Handoff Document - January 8, 2026
+================================================================================
+
+PROJECT OVERVIEW
+----------------
+MURMR is a PWA (Progressive Web App) for tracking smoking sessions and spending.
+Features a GPU-computed 3D starling murmuration using Three.js that reacts to 
+user interactions. Hosted on GitHub Pages.
+
+LIVE URL: https://jorch-wav.github.io/murmr
+REPO: https://github.com/jorch-wav/murmr
+
+================================================================================
+TECH STACK
+================================================================================
+- Vanilla JavaScript (no frameworks)
+- Three.js r128 with GPUComputationRenderer for boids simulation
+- CSS3 with custom properties for theming
+- localStorage for data persistence
+- Service Worker for offline PWA support
+
+================================================================================
+PROJECT STRUCTURE
+================================================================================
+/Users/shared/murmr/
+├── index.html          # Main HTML - all screens in one file
+├── sw.js               # Service worker (increment CACHE_NAME version on changes!)
+├── manifest.json       # PWA manifest
+├── css/
+│   └── styles.css      # All styles, CSS variables for themes
+├── js/
+│   ├── app.js          # Main app initialization, screen management
+│   ├── storage.js      # localStorage wrapper, stats calculation, data persistence
+│   ├── stats.js        # Stats dashboard, charts, history logs
+│   ├── boids.js        # GPU-computed boids simulation (GPUComputationRenderer)
+│   └── themes.js       # Theme management (light/dark/auto + color accents)
+└── icons/              # PWA icons
+
+================================================================================
+KEY FILES EXPLAINED
+================================================================================
+
+1. storage.js - DATA LAYER
+   - KEYS: { SESSIONS, EXPENSES, STREAK_START }
+   - getSessions() / saveSessions() - smoking session CRUD
+   - getExpenses() / saveExpenses() - expense tracking
+   - getStats(period, offset) - returns stats for day/week/month/year
+   - getPeriodBoundaries(period, offset) - calculates date ranges
+   - getStartOfWeek() - weeks start on MONDAY
+   - getStartOfMonth(), getStartOfYear(), getStartOfDay()
+   - getSessionsInRange(startTime, endTime) - filter sessions by timestamp
+   - formatDuration() - human-readable time formatting
+
+2. stats.js - STATS DASHBOARD
+   - StatsView class
+   - Tabs: Day / Week / Month / Year (this.currentPeriod)
+   - Period navigation with arrows (this.periodOffset: 0=current, -1=prev, etc.)
+   - Chart rendering on canvas (hourly for day, daily for week/month, monthly for year)
+   - History logs with edit/delete functionality
+   - Retroactive session adding
+
+3. boids.js - 3D MURMURATION
+   - Uses GPUComputationRenderer for GPU-based simulation
+   - 2048 boids by default
+   - Responds to touch/click with attraction/repulsion
+   - Death animation when logging a session (boids scatter then reform)
+   - Position and velocity computed in fragment shaders
+
+4. app.js - MAIN APP
+   - Screen management (home, stats, log, settings)
+   - Event binding for buttons
+   - Initializes Storage, StatsView, BoidsSimulation, ThemeManager
+
+5. themes.js - THEMING
+   - Light/Dark/Auto modes
+   - Accent colors: red, orange, yellow, green, teal, blue, purple, pink
+   - Persisted to localStorage
+
+================================================================================
+DATA STRUCTURES
+================================================================================
+
+Session object:
+{
+  id: "session_1736123456789",
+  timestamp: 1736123456789,        // Unix timestamp in ms
+  previousStreak: 86400000,        // Duration since last session (for streak tracking)
+  retroactive: true/false          // If added retroactively
+}
+
+Expense object:
+{
+  id: "expense_1736123456789",
+  timestamp: 1736123456789,
+  amount: 12.50,
+  note: "Pack of cigarettes"
+}
+
+================================================================================
+STATS PERIODS
+================================================================================
+- 'daily': Shows hourly chart, starts at midnight today
+- 'weekly': Shows daily chart, week starts MONDAY
+- 'monthly': Shows daily chart, starts 1st of month
+- 'yearly': Shows monthly chart, starts Jan 1
+
+Each can have offset: 0 = current, -1 = previous period, etc.
+
+================================================================================
+IMPORTANT RECENT FIX (Jan 8, 2026)
+================================================================================
+BUG: Stats showed 0 sessions despite data existing
+CAUSE: getPeriodBoundaries() was calling Date methods on timestamp numbers
+FIX: Use `new Date(timestamp)` to convert before calling Date methods
+
+The helper functions getStartOfWeek(), getStartOfMonth(), etc. return TIMESTAMPS 
+(numbers), not Date objects. When using them:
+  WRONG: const d = this.getStartOfMonth(now); d.setMonth(...)
+  RIGHT: const d = new Date(this.getStartOfMonth(now)); d.setMonth(...)
+
+================================================================================
+SERVICE WORKER CACHE
+================================================================================
+IMPORTANT: After ANY code change, increment the cache version in sw.js:
+  const CACHE_NAME = 'murmr-v69';  // <-- increment this number
+
+Then commit and push. Users need to refresh (sometimes twice) to get new version.
+
+================================================================================
+COMMON TASKS
+================================================================================
+
+1. ADD A NEW FEATURE:
+   - Edit relevant JS file
+   - Update sw.js cache version
+   - git add -A && git commit -m "message" && git push
+
+2. DEBUG STATS ISSUES:
+   - Add debug panel to index.html:
+     <div id="debug-panel" style="background:#ffe0e0;padding:10px;margin:10px;font-size:11px;font-family:monospace;"></div>
+   - In stats.js update(), log to debugPanel.innerHTML
+
+3. CHECK STORED DATA:
+   - In browser console: JSON.parse(localStorage.getItem('murmr_sessions'))
+   - Or: JSON.parse(localStorage.getItem('murmr_expenses'))
+
+4. RESET USER DATA (for testing):
+   - localStorage.removeItem('murmr_sessions')
+   - localStorage.removeItem('murmr_expenses')
+   - localStorage.removeItem('murmr_streak_start')
+
+================================================================================
+CSS THEMING
+================================================================================
+Main variables in :root and [data-theme="dark"]:
+  --bg-primary, --bg-secondary, --bg-tertiary
+  --text-primary, --text-secondary
+  --accent (set by accent color choice)
+  --accent-rgb (for rgba usage)
+
+================================================================================
+BOIDS DEATH ANIMATION
+================================================================================
+When user logs a session, boids scatter outward (death animation), then 
+slowly reform. Controlled by:
+  - boidsSimulation.triggerDeath() - starts scatter
+  - deathProgress uniform in shader
+  - Boids reform after ~2 seconds
+
+================================================================================
+GITHUB PAGES DEPLOYMENT
+================================================================================
+- Main branch auto-deploys to GitHub Pages
+- Just push to main: git push origin main
+- Changes typically visible within 1-2 minutes
+- Users may need to hard refresh (clear cache) to see updates
+
+================================================================================
+USER'S CURRENT DATA (as of Jan 8, 2026)
+================================================================================
+- 20 sessions logged (from Jan 5-7, 2026)
+- User's phone date is January 8, 2026
+- No known expenses logged yet
+
+================================================================================
+END OF HANDOFF DOCUMENT
+================================================================================

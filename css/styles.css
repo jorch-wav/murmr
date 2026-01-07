@@ -249,7 +249,7 @@ html, body {
 /* Menu Toggle Button */
 #menu-toggle {
     position: absolute;
-    bottom: calc(var(--safe-area-bottom) + 100px);
+    bottom: calc(var(--safe-area-bottom) + 30px);
     right: 15px;
     width: 44px;
     height: 44px;
