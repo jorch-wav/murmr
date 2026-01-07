@@ -134,6 +134,7 @@ class MurmrApp {
     hideStats() {
         this.statsVisible = false;
         this.statsScreen.classList.remove('visible');
+        this.statsView.stopSinceLastCounter();
         this.hideLogging();
     }
     

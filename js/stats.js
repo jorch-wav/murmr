@@ -17,6 +17,7 @@ class StatsView {
         this.chartCtx = document.getElementById('stats-chart');
         this.historyLogsContainer = document.getElementById('history-logs');
         this.editingLog = null;
+        this.sinceLastInterval = null;
         this.bindEvents();
     }
     
@@ -60,6 +61,10 @@ class StatsView {
         // Update longest streak
         document.getElementById('streak-stat').textContent = this.storage.formatDuration(stats.longestStreak);
         
+        // Update time since last session (and start live counter)
+        this.updateTimeSinceLast();
+        this.startSinceLastCounter();
+        
         // Update average time between
         if (stats.avgTimeBetween) {
             document.getElementById('average-stat').textContent = this.storage.formatDuration(stats.avgTimeBetween);
@@ -82,6 +87,40 @@ class StatsView {
         
         // Render combined history
         this.renderHistory();
+    }
+    
+    updateTimeSinceLast() {
+        const sessions = this.storage.getSessions();
+        const sinceLastEl = document.getElementById('since-last-stat');
+        
+        if (sessions.length === 0) {
+            sinceLastEl.textContent = '--';
+            return;
+        }
+        
+        // Find most recent session
+        const mostRecent = sessions[sessions.length - 1];
+        const timeSince = Date.now() - mostRecent.timestamp;
+        sinceLastEl.textContent = this.storage.formatDuration(timeSince);
+    }
+    
+    startSinceLastCounter() {
+        // Clear existing interval if any
+        if (this.sinceLastInterval) {
+            clearInterval(this.sinceLastInterval);
+        }
+        
+        // Update every second
+        this.sinceLastInterval = setInterval(() => {
+            this.updateTimeSinceLast();
+        }, 1000);
+    }
+    
+    stopSinceLastCounter() {
+        if (this.sinceLastInterval) {
+            clearInterval(this.sinceLastInterval);
+            this.sinceLastInterval = null;
+        }
     }
     
     renderHistory() {
