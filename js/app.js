@@ -13,6 +13,7 @@ class MurmrApp {
         // UI state
         this.loggingVisible = false;
         this.statsVisible = false;
+        this.isDeathAnimating = false;
         
         // Elements
         this.loggingOverlay = document.getElementById('logging-overlay');
@@ -279,8 +280,12 @@ class MurmrApp {
         // Update display text immediately (shows 0:00:00 and 1 bird)
         this.updateDisplayText();
         
+        // Flag to prevent update loop from changing bird count during animation
+        this.isDeathAnimating = true;
+        
         // Trigger death animation, then reset the actual birds
         this.murmuration.triggerDeath(() => {
+            this.isDeathAnimating = false;
             this.murmuration.reset();
             this.updateDisplay();
         });
@@ -374,14 +379,16 @@ class MurmrApp {
     }
     
     updateDisplay() {
-        // Update bird count
-        const targetBirds = this.storage.calculateBirds();
-        this.murmuration.setBoidCount(targetBirds);
-        // Display actual rendered bird count (GPU uses WIDTH*WIDTH grid)
-        const actualBirds = this.murmuration.getBoidCount();
-        document.getElementById('bird-number').textContent = actualBirds;
+        // Don't update bird count during death animation
+        if (!this.isDeathAnimating) {
+            const targetBirds = this.storage.calculateBirds();
+            this.murmuration.setBoidCount(targetBirds);
+            // Display actual rendered bird count (GPU uses WIDTH*WIDTH grid)
+            const actualBirds = this.murmuration.getBoidCount();
+            document.getElementById('bird-number').textContent = actualBirds;
+        }
         
-        // Update time display
+        // Always update time display
         const duration = this.storage.getStreakDuration();
         document.getElementById('elapsed-time').textContent = this.storage.formatDuration(duration);
     }
