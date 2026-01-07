@@ -122,7 +122,7 @@ class StatsView {
     
     update() {
         try {
-            // Debug panel output
+            // Debug panel output - compact version
             const debugPanel = document.getElementById('debug-panel');
             const allSessions = this.storage.getSessions();
             
@@ -130,19 +130,18 @@ class StatsView {
             const todayStart = new Date(now);
             todayStart.setHours(0, 0, 0, 0);
             
-            let debugHtml = `<strong>Sessions: ${allSessions.length} | Now: ${now.toLocaleString()}</strong><br>`;
-            debugHtml += `Today starts: ${todayStart.toLocaleString()}<br><br>`;
+            // Count how many sessions are from today vs before
+            const todaySessions = allSessions.filter(s => s.timestamp >= todayStart.getTime());
+            const oldSessions = allSessions.filter(s => s.timestamp < todayStart.getTime());
             
-            if (allSessions.length > 0) {
-                // Show last 5 sessions
-                const recentSessions = allSessions.slice(-5);
-                debugHtml += '<strong>Last 5 sessions:</strong><br>';
-                recentSessions.forEach((s, i) => {
-                    const sessionDate = new Date(s.timestamp);
-                    const isToday = s.timestamp >= todayStart.getTime();
-                    debugHtml += `${sessionDate.toLocaleString()} ${isToday ? '✓TODAY' : ''}<br>`;
-                });
-            }
+            // Get first and last session dates
+            const first = allSessions.length > 0 ? new Date(allSessions[0].timestamp) : null;
+            const last = allSessions.length > 0 ? new Date(allSessions[allSessions.length - 1].timestamp) : null;
+            
+            let debugHtml = `<b>Total: ${allSessions.length}</b> | Today: ${todaySessions.length} | Before: ${oldSessions.length}<br>`;
+            debugHtml += `Now: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}<br>`;
+            if (first) debugHtml += `First: ${first.toLocaleDateString()} | Last: ${last.toLocaleDateString()}<br>`;
+            debugHtml += `TodayStart: ${todayStart.getTime()} | Last ts: ${last ? last.getTime() : 'N/A'}`;
             
             if (debugPanel) debugPanel.innerHTML = debugHtml;
             

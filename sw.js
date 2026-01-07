@@ -1,5 +1,5 @@
 // MURMR Service Worker - Offline Support
-const CACHE_NAME = 'murmr-v63';
+const CACHE_NAME = 'murmr-v64';
 const urlsToCache = [
     './',
     './index.html',
