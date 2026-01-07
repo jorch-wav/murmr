@@ -416,10 +416,22 @@ class MurmrStorage {
         const { startTime, endTime } = this.getPeriodBoundaries(period, offset);
         const { startTime: prevStart, endTime: prevEnd } = this.getPeriodBoundaries(period, offset - 1);
         
+        // Debug logging
+        console.log('getStats boundaries:', {
+            period,
+            offset,
+            startTime,
+            endTime,
+            startDate: new Date(startTime).toString(),
+            endDate: new Date(endTime).toString()
+        });
+        
         // Current period stats
         const currentSessions = this.getSessionsInRange(startTime, endTime);
         const currentExpenses = this.getExpensesInRange(startTime, endTime);
         const currentSpending = currentExpenses.reduce((sum, e) => sum + e.amount, 0);
+        
+        console.log('Sessions in range:', currentSessions.length, currentSessions);
         
         // Previous period stats
         const previousSessions = this.getSessionsInRange(prevStart, prevEnd);

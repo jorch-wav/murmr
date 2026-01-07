@@ -122,7 +122,18 @@ class StatsView {
     
     update() {
         try {
+            // Debug: Log all sessions with timestamps
+            const allSessions = this.storage.getSessions();
+            console.log('=== STATS DEBUG ===');
+            console.log('Total sessions in storage:', allSessions.length);
+            console.log('Sessions:', allSessions.map(s => ({
+                timestamp: s.timestamp,
+                date: new Date(s.timestamp).toString()
+            })));
+            
             const stats = this.storage.getStats(this.currentPeriod, this.periodOffset);
+            console.log('Period:', this.currentPeriod, 'Offset:', this.periodOffset);
+            console.log('Stats returned:', stats);
             
             // Update period label/title
             document.getElementById('chart-title').textContent = stats.periodLabel;
