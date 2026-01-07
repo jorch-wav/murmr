@@ -19,6 +19,8 @@ class StatsView {
         this.historyLogsContainer = document.getElementById('history-logs');
         this.editingLog = null;
         this.sinceLastInterval = null;
+        this.chartBars = [];
+        this.chartTooltip = null;
         this.bindEvents();
     }
     
@@ -30,6 +32,7 @@ class StatsView {
                 btn.classList.add('active');
                 this.currentPeriod = btn.dataset.period;
                 this.periodOffset = 0; // Reset to current when switching tabs
+                this.hideChartTooltip();
                 this.update();
             });
         });
@@ -37,15 +40,84 @@ class StatsView {
         // Period navigation
         document.getElementById('period-prev')?.addEventListener('click', () => {
             this.periodOffset--;
+            this.hideChartTooltip();
             this.update();
         });
         
         document.getElementById('period-next')?.addEventListener('click', () => {
             if (this.periodOffset < 0) {
                 this.periodOffset++;
+                this.hideChartTooltip();
                 this.update();
             }
         });
+        
+        // Chart touch interaction for tooltip
+        this.chartCtx?.addEventListener('click', (e) => this.handleChartTouch(e));
+        this.chartCtx?.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.handleChartTouch(e.touches[0]);
+        }, { passive: false });
+    }
+    
+    handleChartTouch(e) {
+        if (!this.chartBars || this.chartBars.length === 0) return;
+        
+        const canvas = this.chartCtx;
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        // Find which bar was touched
+        for (const bar of this.chartBars) {
+            if (x >= bar.x && x <= bar.x + bar.width && 
+                y >= bar.y && y <= bar.y + bar.height + 10) { // +10 for easier touch
+                if (bar.count > 0) {
+                    this.showChartTooltip(bar, rect);
+                    return;
+                }
+            }
+        }
+        
+        // Clicked outside bars - hide tooltip
+        this.hideChartTooltip();
+    }
+    
+    showChartTooltip(bar, canvasRect) {
+        this.hideChartTooltip();
+        
+        const tooltip = document.createElement('div');
+        tooltip.className = 'chart-tooltip';
+        
+        const isDaily = this.chartBars.length === 24;
+        let text = '';
+        if (isDaily) {
+            text = `${bar.count} session${bar.count > 1 ? 's' : ''} at ${bar.label}`;
+        } else {
+            text = `${bar.count} session${bar.count > 1 ? 's' : ''} · ${bar.label}`;
+        }
+        tooltip.textContent = text;
+        
+        document.body.appendChild(tooltip);
+        this.chartTooltip = tooltip;
+        
+        // Position tooltip above the bar
+        const tooltipRect = tooltip.getBoundingClientRect();
+        const left = canvasRect.left + bar.x + bar.width / 2 - tooltipRect.width / 2;
+        const top = canvasRect.top + bar.y - tooltipRect.height - 8;
+        
+        tooltip.style.left = Math.max(10, Math.min(left, window.innerWidth - tooltipRect.width - 10)) + 'px';
+        tooltip.style.top = Math.max(10, top) + 'px';
+        
+        // Auto-hide after 2 seconds
+        setTimeout(() => this.hideChartTooltip(), 2000);
+    }
+    
+    hideChartTooltip() {
+        if (this.chartTooltip) {
+            this.chartTooltip.remove();
+            this.chartTooltip = null;
+        }
     }
     
     update() {
@@ -352,11 +424,16 @@ class StatsView {
         ctx.clearRect(0, 0, width, height);
         
         // Chart dimensions
-        const padding = { top: 20, right: 10, bottom: 30, left: 10 };
+        const padding = { top: 15, right: 10, bottom: 30, left: 10 };
         const chartWidth = width - padding.left - padding.right;
         const chartHeight = height - padding.top - padding.bottom;
         
         const barCount = data.labels.length;
+        
+        // Store bar positions for touch interaction
+        this.chartBars = [];
+        this.chartData = data;
+        this.chartDimensions = { width, height, padding, chartWidth, chartHeight };
         
         // Draw baseline first
         ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
@@ -375,11 +452,11 @@ class StatsView {
             return;
         }
         
-        // For daily view (24 bars), use thinner bars
+        // Thicker bars for all views
         const isDaily = barCount === 24;
         const barWidth = isDaily 
-            ? Math.max(6, (chartWidth / barCount) * 0.6)
-            : Math.min(30, (chartWidth / barCount) * 0.7);
+            ? Math.max(8, (chartWidth / barCount) * 0.75)
+            : Math.min(35, (chartWidth / barCount) * 0.75);
         const barGap = (chartWidth - (barWidth * barCount)) / (barCount + 1);
         
         // Find max value
@@ -388,52 +465,43 @@ class StatsView {
         // Draw bars
         for (let i = 0; i < barCount; i++) {
             const x = padding.left + barGap + (i * (barWidth + barGap));
-            const sessionHeight = Math.max(2, (data.sessionCounts[i] / maxSessions) * chartHeight);
+            const count = data.sessionCounts[i];
+            const sessionHeight = count > 0 
+                ? Math.max(4, (count / maxSessions) * chartHeight)
+                : 0;
             const y = padding.top + chartHeight - sessionHeight;
             
-            // Session bar - use simple rect for compatibility
-            if (data.sessionCounts[i] > 0) {
+            // Store bar position for touch detection
+            this.chartBars.push({
+                x, y, width: barWidth, height: sessionHeight,
+                count, label: data.labels[i], index: i
+            });
+            
+            // Session bar
+            if (count > 0) {
                 const gradient = ctx.createLinearGradient(x, y, x, padding.top + chartHeight);
                 gradient.addColorStop(0, 'rgba(248, 113, 113, 1)');
                 gradient.addColorStop(1, 'rgba(248, 113, 113, 0.5)');
                 
                 ctx.fillStyle = gradient;
                 ctx.beginPath();
-                // Rounded rect with fallback
                 if (ctx.roundRect) {
-                    ctx.roundRect(x, y, barWidth, sessionHeight, 3);
+                    ctx.roundRect(x, y, barWidth, sessionHeight, 4);
                 } else {
                     ctx.rect(x, y, barWidth, sessionHeight);
                 }
                 ctx.fill();
-                
-                // Draw label above bar - show time for daily, count for others
-                ctx.fillStyle = '#333';
-                ctx.font = 'bold 9px -apple-system, sans-serif';
-                ctx.textAlign = 'center';
-                
-                if (isDaily) {
-                    // For daily view, show the hour label above the bar
-                    ctx.fillText(data.labels[i], x + barWidth / 2, y - 4);
-                } else {
-                    // For other periods, show count
-                    ctx.fillText(data.sessionCounts[i], x + barWidth / 2, y - 4);
-                }
             }
             
-            // Draw x-axis labels
+            // Draw x-axis labels (sparse for readability)
             let showLabel = false;
             if (isDaily) {
-                // For daily: show every 6 hours (12am, 6am, 12pm, 6pm)
                 showLabel = i % 6 === 0;
             } else if (barCount <= 7) {
-                // Weekly: show all
                 showLabel = true;
             } else if (barCount <= 12) {
-                // Yearly (months): show all
                 showLabel = true;
             } else {
-                // Monthly (days): show every 5th
                 showLabel = (i + 1) % 5 === 0 || i === 0;
             }
             
