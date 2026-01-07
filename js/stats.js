@@ -144,12 +144,17 @@ class StatsView {
             sessionChange.className = 'stat-change';
         }
         
-        // Update spending
-        document.getElementById('spending-stat').textContent = '$' + stats.spending.toFixed(2);
+        // Update spending card (monthly for day/week/month, yearly for year)
+        const spendingLabel = document.querySelector('.stat-card:nth-child(2) h3');
+        if (spendingLabel) {
+            spendingLabel.textContent = stats.spendingCardLabel || 'SPENDING';
+        }
+        document.getElementById('spending-stat').textContent = '$' + stats.spendingCardAmount.toFixed(2);
         const spendingChange = document.getElementById('spending-change');
-        if (stats.spendingChange !== 0) {
-            spendingChange.textContent = `${stats.spendingChange > 0 ? '+' : ''}$${stats.spendingChange.toFixed(2)} vs prev`;
-            spendingChange.className = 'stat-change ' + (stats.spendingChange <= 0 ? 'positive' : 'negative');
+        if (stats.spendingCardChange !== 0) {
+            const compareLabel = stats.period === 'yearly' ? 'vs last year' : 'vs last month';
+            spendingChange.textContent = `${stats.spendingCardChange > 0 ? '+' : ''}$${stats.spendingCardChange.toFixed(2)} ${compareLabel}`;
+            spendingChange.className = 'stat-change ' + (stats.spendingCardChange <= 0 ? 'positive' : 'negative');
         } else {
             spendingChange.textContent = 'No change';
             spendingChange.className = 'stat-change';
