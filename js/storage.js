@@ -155,12 +155,28 @@ class MurmrStorage {
         
         this.saveSessions(sessions);
         
-        // Update streak start: find the most recent session timestamp
-        // The streak starts from the most recent session
-        const mostRecentSession = sessions[sessions.length - 1];
-        this.setStreakStart(mostRecentSession.timestamp);
+        // Update streak start to most recent session
+        this.recalculateStreakStart();
         
         return sessions.find(s => s.timestamp === timestamp);
+    }
+    
+    // Recalculate streak start based on all sessions
+    recalculateStreakStart() {
+        const sessions = this.getSessions();
+        if (sessions.length === 0) return;
+        
+        // Find the maximum timestamp (most recent session)
+        let maxTimestamp = 0;
+        for (const session of sessions) {
+            if (session.timestamp > maxTimestamp) {
+                maxTimestamp = session.timestamp;
+            }
+        }
+        
+        if (maxTimestamp > 0) {
+            this.setStreakStart(maxTimestamp);
+        }
     }
     
     getSessionsInRange(startTime, endTime) {
@@ -229,12 +245,8 @@ class MurmrStorage {
             sessions.splice(index, 1);
             this.saveSessions(sessions);
             
-            // Update streak start to most recent session (or reset if no sessions)
-            if (sessions.length > 0) {
-                const mostRecentSession = sessions[sessions.length - 1];
-                this.setStreakStart(mostRecentSession.timestamp);
-            }
-            // If no sessions left, streak remains as is (from beginning of time)
+            // Recalculate streak from remaining sessions
+            this.recalculateStreakStart();
         }
     }
     
@@ -246,9 +258,8 @@ class MurmrStorage {
             sessions.sort((a, b) => a.timestamp - b.timestamp);
             this.saveSessions(sessions);
             
-            // Update streak start to most recent session
-            const mostRecentSession = sessions[sessions.length - 1];
-            this.setStreakStart(mostRecentSession.timestamp);
+            // Recalculate streak
+            this.recalculateStreakStart();
         }
     }
     
