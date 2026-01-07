@@ -421,6 +421,7 @@ class Murmuration {
             'color': { value: new THREE.Color(0x000000) },
             'birdColor': { value: birdColorValue },
             'colorMode': { value: colorModeValue },
+            'deathMode': { value: 0.0 },
             'texturePosition': { value: null },
             'textureVelocity': { value: null },
             'time': { value: 1.0 },
@@ -667,6 +668,7 @@ class Murmuration {
         
         // Set death mode immediately so wings stop flapping
         this.positionUniforms['deathMode'].value = 1.0;
+        this.birdUniforms['deathMode'].value = 1.0;
         
         // Animate death velocity from 0 to 1 over 8 seconds for full fall off screen
         const duration = 8000;
@@ -687,6 +689,7 @@ class Murmuration {
                 setTimeout(() => {
                     this.velocityUniforms['deathMode'].value = 0;
                     this.positionUniforms['deathMode'].value = 0;
+                    this.birdUniforms['deathMode'].value = 0;
                     if (callback) callback();
                 }, 3000);
             }
