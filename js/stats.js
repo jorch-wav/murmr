@@ -122,26 +122,17 @@ class StatsView {
     
     update() {
         try {
-            // Debug panel output - compact version
+            // Debug panel - show what's happening with filtering
             const debugPanel = document.getElementById('debug-panel');
             const allSessions = this.storage.getSessions();
             
-            const now = new Date();
-            const todayStart = new Date(now);
-            todayStart.setHours(0, 0, 0, 0);
+            // Get the boundaries being used
+            const boundaries = this.storage.getPeriodBoundaries(this.currentPeriod, this.periodOffset);
+            const sessionsInRange = this.storage.getSessionsInRange(boundaries.startTime, boundaries.endTime);
             
-            // Count how many sessions are from today vs before
-            const todaySessions = allSessions.filter(s => s.timestamp >= todayStart.getTime());
-            const oldSessions = allSessions.filter(s => s.timestamp < todayStart.getTime());
-            
-            // Get first and last session dates
-            const first = allSessions.length > 0 ? new Date(allSessions[0].timestamp) : null;
-            const last = allSessions.length > 0 ? new Date(allSessions[allSessions.length - 1].timestamp) : null;
-            
-            let debugHtml = `<b>Total: ${allSessions.length}</b> | Today: ${todaySessions.length} | Before: ${oldSessions.length}<br>`;
-            debugHtml += `Now: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}<br>`;
-            if (first) debugHtml += `First: ${first.toLocaleDateString()} | Last: ${last.toLocaleDateString()}<br>`;
-            debugHtml += `TodayStart: ${todayStart.getTime()} | Last ts: ${last ? last.getTime() : 'N/A'}`;
+            let debugHtml = `<b>${allSessions.length} total</b> | Period: ${this.currentPeriod}<br>`;
+            debugHtml += `Range: ${new Date(boundaries.startTime).toLocaleString()} to ${new Date(boundaries.endTime).toLocaleString()}<br>`;
+            debugHtml += `<b>Found in range: ${sessionsInRange.length}</b>`;
             
             if (debugPanel) debugPanel.innerHTML = debugHtml;
             
