@@ -273,13 +273,16 @@ class MurmrApp {
     logSession() {
         this.hideModals();
         
-        // Reset storage and display immediately
+        // Log session to storage immediately (resets streak)
         this.storage.logSession();
-        this.updateDisplay();
         
-        // Trigger death animation (visual only, resets birds when done)
+        // Update display text immediately (shows 0:00:00 and 1 bird)
+        this.updateDisplayText();
+        
+        // Trigger death animation, then reset the actual birds
         this.murmuration.triggerDeath(() => {
             this.murmuration.reset();
+            this.updateDisplay();
         });
     }
     
@@ -360,6 +363,15 @@ class MurmrApp {
     // =====================================================
     // DISPLAY UPDATES
     // =====================================================
+    
+    // Update only the text display (timer and bird count label)
+    updateDisplayText() {
+        const targetBirds = this.storage.calculateBirds();
+        document.getElementById('bird-number').textContent = targetBirds;
+        
+        const duration = this.storage.getStreakDuration();
+        document.getElementById('elapsed-time').textContent = this.storage.formatDuration(duration);
+    }
     
     updateDisplay() {
         // Update bird count
