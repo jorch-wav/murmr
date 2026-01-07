@@ -134,19 +134,32 @@ class StatsView {
                 nextBtn.style.pointerEvents = this.periodOffset < 0 ? 'auto' : 'none';
             }
             
-            // Update session count
+            // Update sessions label based on period
+            const sessionsLabel = document.getElementById('sessions-label');
+            const totalSessions = this.storage.getSessions().length;
+            const periodLabels = {
+                'daily': this.periodOffset === 0 ? 'Sessions Today' : 'Sessions',
+                'weekly': this.periodOffset === 0 ? 'Sessions This Week' : 'Sessions',
+                'monthly': this.periodOffset === 0 ? 'Sessions This Month' : 'Sessions',
+                'yearly': this.periodOffset === 0 ? 'Sessions This Year' : 'Sessions'
+            };
+            if (sessionsLabel) {
+                sessionsLabel.textContent = periodLabels[stats.period] || 'Sessions';
+            }
+            
+            // Update session count - show period count, with total in subtext
             document.getElementById('sessions-stat').textContent = stats.sessions || 0;
             const sessionChange = document.getElementById('sessions-change');
             if (stats.sessionChange && stats.sessionChange !== 0) {
-                sessionChange.textContent = `${stats.sessionChange > 0 ? '+' : ''}${stats.sessionChange} vs prev`;
+                sessionChange.textContent = `${stats.sessionChange > 0 ? '+' : ''}${stats.sessionChange} vs prev · ${totalSessions} total`;
                 sessionChange.className = 'stat-change ' + (stats.sessionChange <= 0 ? 'positive' : 'negative');
             } else {
-                sessionChange.textContent = 'No change';
+                sessionChange.textContent = totalSessions > 0 ? `${totalSessions} total` : 'No sessions yet';
                 sessionChange.className = 'stat-change';
             }
             
             // Update spending card (monthly for day/week/month, yearly for year)
-            const spendingLabel = document.querySelector('.stat-card:nth-child(2) h3');
+            const spendingLabel = document.getElementById('spending-label');
             if (spendingLabel) {
                 spendingLabel.textContent = stats.spendingCardLabel || 'SPENDING';
             }
