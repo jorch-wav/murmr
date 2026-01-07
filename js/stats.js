@@ -122,18 +122,23 @@ class StatsView {
     
     update() {
         try {
-            // Debug: Log all sessions with timestamps
+            // Debug panel output
+            const debugPanel = document.getElementById('debug-panel');
             const allSessions = this.storage.getSessions();
-            console.log('=== STATS DEBUG ===');
-            console.log('Total sessions in storage:', allSessions.length);
-            console.log('Sessions:', allSessions.map(s => ({
-                timestamp: s.timestamp,
-                date: new Date(s.timestamp).toString()
-            })));
+            
+            let debugHtml = `<strong>Sessions in storage: ${allSessions.length}</strong><br>`;
+            if (allSessions.length > 0) {
+                allSessions.forEach((s, i) => {
+                    debugHtml += `#${i+1}: ${new Date(s.timestamp).toLocaleString()}<br>`;
+                });
+            } else {
+                debugHtml += 'No sessions found in localStorage!<br>';
+            }
+            debugHtml += `<br>Raw key: ${localStorage.getItem('murmr_sessions') ? 'EXISTS' : 'MISSING'}`;
+            
+            if (debugPanel) debugPanel.innerHTML = debugHtml;
             
             const stats = this.storage.getStats(this.currentPeriod, this.periodOffset);
-            console.log('Period:', this.currentPeriod, 'Offset:', this.periodOffset);
-            console.log('Stats returned:', stats);
             
             // Update period label/title
             document.getElementById('chart-title').textContent = stats.periodLabel;
