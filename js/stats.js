@@ -7,6 +7,7 @@ class StatsView {
     constructor(storage) {
         this.storage = storage;
         this.currentPeriod = 'daily';
+        this.periodOffset = 0; // 0 = current, -1 = previous, etc.
         this.chart = null;
         this.chartCtx = null;
         
@@ -28,13 +29,37 @@ class StatsView {
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 this.currentPeriod = btn.dataset.period;
+                this.periodOffset = 0; // Reset to current when switching tabs
                 this.update();
             });
+        });
+        
+        // Period navigation
+        document.getElementById('period-prev')?.addEventListener('click', () => {
+            this.periodOffset--;
+            this.update();
+        });
+        
+        document.getElementById('period-next')?.addEventListener('click', () => {
+            if (this.periodOffset < 0) {
+                this.periodOffset++;
+                this.update();
+            }
         });
     }
     
     update() {
-        const stats = this.storage.getStats(this.currentPeriod);
+        const stats = this.storage.getStats(this.currentPeriod, this.periodOffset);
+        
+        // Update period label/title
+        document.getElementById('chart-title').textContent = stats.periodLabel;
+        
+        // Show/hide next button (can't go to future)
+        const nextBtn = document.getElementById('period-next');
+        if (nextBtn) {
+            nextBtn.style.opacity = this.periodOffset < 0 ? '1' : '0.3';
+            nextBtn.style.pointerEvents = this.periodOffset < 0 ? 'auto' : 'none';
+        }
         
         // Update session count
         document.getElementById('sessions-stat').textContent = stats.sessions;
@@ -72,14 +97,8 @@ class StatsView {
             document.getElementById('average-stat').textContent = '--';
         }
         
-        // Update chart title
-        const periodLabels = {
-            daily: 'Last 24 Hours',
-            weekly: 'Last 7 Days',
-            monthly: 'Last 30 Days',
-            yearly: 'Last Year'
-        };
-        document.getElementById('chart-title').textContent = periodLabels[this.currentPeriod] || 'Activity';
+        // Update chart title with period label
+        document.getElementById('chart-title').textContent = stats.periodLabel || 'Activity';
         
         // Render chart
         this.renderChart(stats.chartData);

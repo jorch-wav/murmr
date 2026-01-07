@@ -81,22 +81,6 @@ class MurmrApp {
                 this.saveExpense();
             }
         });
-        
-        // Handle back swipe on stats screen
-        this.statsScreen.addEventListener('touchstart', (e) => {
-            this.statsSwipeStartX = e.touches[0].clientX;
-        }, { passive: true });
-        
-        this.statsScreen.addEventListener('touchmove', (e) => {
-            if (this.statsSwipeStartX !== undefined) {
-                const deltaX = e.touches[0].clientX - this.statsSwipeStartX;
-                if (deltaX > 50) {
-                    // Swiping right on stats - close it
-                    this.hideStats();
-                    this.statsSwipeStartX = undefined;
-                }
-            }
-        }, { passive: true });
     }
     
     // =====================================================

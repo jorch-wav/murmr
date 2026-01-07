@@ -299,50 +299,131 @@ class MurmrStorage {
     // STATISTICS
     // =====================================================
     
-    getStats(period = 'daily') {
-        const now = Date.now();
-        let startTime, previousStart, previousEnd;
+    // Get start of day (midnight)
+    getStartOfDay(date) {
+        const d = new Date(date);
+        d.setHours(0, 0, 0, 0);
+        return d.getTime();
+    }
+    
+    // Get start of week (Monday midnight)
+    getStartOfWeek(date) {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Monday start
+        d.setDate(diff);
+        d.setHours(0, 0, 0, 0);
+        return d.getTime();
+    }
+    
+    // Get start of month (1st midnight)
+    getStartOfMonth(date) {
+        const d = new Date(date);
+        d.setDate(1);
+        d.setHours(0, 0, 0, 0);
+        return d.getTime();
+    }
+    
+    // Get start of year (Jan 1 midnight)
+    getStartOfYear(date) {
+        const d = new Date(date);
+        d.setMonth(0, 1);
+        d.setHours(0, 0, 0, 0);
+        return d.getTime();
+    }
+    
+    // Get period boundaries based on type and offset (0 = current, -1 = previous, etc.)
+    getPeriodBoundaries(period, offset = 0) {
+        const now = new Date();
+        let startTime, endTime;
         
         switch (period) {
-            case 'hourly':
-                startTime = now - (60 * 60 * 1000);
-                previousStart = now - (2 * 60 * 60 * 1000);
-                previousEnd = startTime;
+            case 'daily': {
+                const today = new Date(this.getStartOfDay(now));
+                today.setDate(today.getDate() + offset);
+                startTime = today.getTime();
+                const nextDay = new Date(today);
+                nextDay.setDate(nextDay.getDate() + 1);
+                endTime = offset === 0 ? Date.now() : nextDay.getTime();
                 break;
-            case 'daily':
-                startTime = now - (24 * 60 * 60 * 1000);
-                previousStart = now - (2 * 24 * 60 * 60 * 1000);
-                previousEnd = startTime;
+            }
+            case 'weekly': {
+                const weekStart = new Date(this.getStartOfWeek(now));
+                weekStart.setDate(weekStart.getDate() + (offset * 7));
+                startTime = weekStart.getTime();
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekEnd.getDate() + 7);
+                endTime = offset === 0 ? Date.now() : weekEnd.getTime();
                 break;
-            case 'weekly':
-                startTime = now - (7 * 24 * 60 * 60 * 1000);
-                previousStart = now - (14 * 24 * 60 * 60 * 1000);
-                previousEnd = startTime;
+            }
+            case 'monthly': {
+                const monthStart = new Date(this.getStartOfMonth(now));
+                monthStart.setMonth(monthStart.getMonth() + offset);
+                startTime = monthStart.getTime();
+                const monthEnd = new Date(monthStart);
+                monthEnd.setMonth(monthEnd.getMonth() + 1);
+                endTime = offset === 0 ? Date.now() : monthEnd.getTime();
                 break;
-            case 'monthly':
-                startTime = now - (30 * 24 * 60 * 60 * 1000);
-                previousStart = now - (60 * 24 * 60 * 60 * 1000);
-                previousEnd = startTime;
+            }
+            case 'yearly': {
+                const yearStart = new Date(this.getStartOfYear(now));
+                yearStart.setFullYear(yearStart.getFullYear() + offset);
+                startTime = yearStart.getTime();
+                const yearEnd = new Date(yearStart);
+                yearEnd.setFullYear(yearEnd.getFullYear() + 1);
+                endTime = offset === 0 ? Date.now() : yearEnd.getTime();
                 break;
-            case 'yearly':
-                startTime = now - (365 * 24 * 60 * 60 * 1000);
-                previousStart = now - (730 * 24 * 60 * 60 * 1000);
-                previousEnd = startTime;
-                break;
+            }
             default:
-                startTime = now - (24 * 60 * 60 * 1000);
-                previousStart = now - (2 * 24 * 60 * 60 * 1000);
-                previousEnd = startTime;
+                return this.getPeriodBoundaries('daily', offset);
         }
         
+        return { startTime, endTime };
+    }
+    
+    // Format period label for display
+    getPeriodLabel(period, offset) {
+        const { startTime } = this.getPeriodBoundaries(period, offset);
+        const date = new Date(startTime);
+        
+        if (offset === 0) {
+            switch (period) {
+                case 'daily': return 'Today';
+                case 'weekly': return 'This Week';
+                case 'monthly': return 'This Month';
+                case 'yearly': return 'This Year';
+            }
+        }
+        
+        switch (period) {
+            case 'daily':
+                if (offset === -1) return 'Yesterday';
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            case 'weekly':
+                if (offset === -1) return 'Last Week';
+                const weekEnd = new Date(startTime);
+                weekEnd.setDate(weekEnd.getDate() + 6);
+                return `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+            case 'monthly':
+                return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            case 'yearly':
+                return date.getFullYear().toString();
+        }
+        return '';
+    }
+    
+    getStats(period = 'daily', offset = 0) {
+        const { startTime, endTime } = this.getPeriodBoundaries(period, offset);
+        const { startTime: prevStart, endTime: prevEnd } = this.getPeriodBoundaries(period, offset - 1);
+        
         // Current period stats
-        const currentSessions = this.getSessionsInRange(startTime, now);
-        const currentExpenses = this.getExpensesInRange(startTime, now);
+        const currentSessions = this.getSessionsInRange(startTime, endTime);
+        const currentExpenses = this.getExpensesInRange(startTime, endTime);
         const currentSpending = currentExpenses.reduce((sum, e) => sum + e.amount, 0);
         
         // Previous period stats
-        const previousSessions = this.getSessionsInRange(previousStart, previousEnd);
-        const previousExpenses = this.getExpensesInRange(previousStart, previousEnd);
+        const previousSessions = this.getSessionsInRange(prevStart, prevEnd);
+        const previousExpenses = this.getExpensesInRange(prevStart, prevEnd);
         const previousSpending = previousExpenses.reduce((sum, e) => sum + e.amount, 0);
         
         // Calculate changes
@@ -371,13 +452,15 @@ class MurmrStorage {
         
         return {
             period,
+            offset,
+            periodLabel: this.getPeriodLabel(period, offset),
             sessions: currentSessions.length,
             sessionChange,
             spending: currentSpending,
             spendingChange,
             longestStreak,
             avgTimeBetween,
-            chartData: this.getChartData(period, startTime, now)
+            chartData: this.getChartData(period, startTime, endTime)
         };
     }
     
@@ -385,57 +468,70 @@ class MurmrStorage {
         const sessions = this.getSessionsInRange(startTime, endTime);
         const expenses = this.getExpensesInRange(startTime, endTime);
         
-        let bucketSize, bucketCount, labelFormat;
+        let buckets = [];
         
         switch (period) {
-            case 'hourly':
-                bucketSize = 5 * 60 * 1000; // 5 minute buckets
-                bucketCount = 12;
-                labelFormat = (d) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            case 'daily': {
+                // Hourly buckets for the day
+                for (let h = 0; h < 24; h++) {
+                    const bucketStart = startTime + (h * 60 * 60 * 1000);
+                    const bucketEnd = bucketStart + (60 * 60 * 1000);
+                    const label = new Date(bucketStart).toLocaleTimeString([], { hour: 'numeric' });
+                    buckets.push({ bucketStart, bucketEnd, label });
+                }
                 break;
-            case 'daily':
-                bucketSize = 2 * 60 * 60 * 1000; // 2 hour buckets
-                bucketCount = 12;
-                labelFormat = (d) => d.toLocaleTimeString([], { hour: '2-digit' });
+            }
+            case 'weekly': {
+                // Daily buckets for the week
+                for (let d = 0; d < 7; d++) {
+                    const bucketStart = startTime + (d * 24 * 60 * 60 * 1000);
+                    const bucketEnd = bucketStart + (24 * 60 * 60 * 1000);
+                    const label = new Date(bucketStart).toLocaleDateString([], { weekday: 'short' });
+                    buckets.push({ bucketStart, bucketEnd, label });
+                }
                 break;
-            case 'weekly':
-                bucketSize = 24 * 60 * 60 * 1000; // 1 day buckets
-                bucketCount = 7;
-                labelFormat = (d) => d.toLocaleDateString([], { weekday: 'short' });
+            }
+            case 'monthly': {
+                // Daily buckets for the month
+                const monthStart = new Date(startTime);
+                const daysInMonth = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0).getDate();
+                for (let d = 0; d < daysInMonth; d++) {
+                    const bucketStart = startTime + (d * 24 * 60 * 60 * 1000);
+                    const bucketEnd = bucketStart + (24 * 60 * 60 * 1000);
+                    const label = (d + 1).toString();
+                    buckets.push({ bucketStart, bucketEnd, label });
+                }
                 break;
-            case 'monthly':
-                bucketSize = 24 * 60 * 60 * 1000; // 1 day buckets
-                bucketCount = 30;
-                labelFormat = (d) => d.getDate().toString();
+            }
+            case 'yearly': {
+                // Monthly buckets for the year
+                const yearStart = new Date(startTime);
+                for (let m = 0; m < 12; m++) {
+                    const monthDate = new Date(yearStart.getFullYear(), m, 1);
+                    const bucketStart = monthDate.getTime();
+                    const nextMonth = new Date(yearStart.getFullYear(), m + 1, 1);
+                    const bucketEnd = nextMonth.getTime();
+                    const label = monthDate.toLocaleDateString([], { month: 'short' });
+                    buckets.push({ bucketStart, bucketEnd, label });
+                }
                 break;
-            case 'yearly':
-                bucketSize = 30 * 24 * 60 * 60 * 1000; // ~1 month buckets
-                bucketCount = 12;
-                labelFormat = (d) => d.toLocaleDateString([], { month: 'short' });
-                break;
-            default:
-                bucketSize = 2 * 60 * 60 * 1000;
-                bucketCount = 12;
-                labelFormat = (d) => d.toLocaleTimeString([], { hour: '2-digit' });
+            }
         }
         
         const labels = [];
         const sessionCounts = [];
         const spendingAmounts = [];
         
-        for (let i = 0; i < bucketCount; i++) {
-            const bucketStart = startTime + (i * bucketSize);
-            const bucketEnd = bucketStart + bucketSize;
-            
-            labels.push(labelFormat(new Date(bucketStart)));
+        for (const bucket of buckets) {
+            labels.push(bucket.label);
             
             const bucketSessions = sessions.filter(s => 
-                s.timestamp >= bucketStart && s.timestamp < bucketEnd
+                s.timestamp >= bucket.bucketStart && s.timestamp < bucket.bucketEnd
             );
             sessionCounts.push(bucketSessions.length);
             
             const bucketExpenses = expenses.filter(e => 
-                e.timestamp >= bucketStart && e.timestamp < bucketEnd
+                e.timestamp >= bucket.bucketStart && e.timestamp < bucket.bucketEnd
             );
             spendingAmounts.push(bucketExpenses.reduce((sum, e) => sum + e.amount, 0));
         }

@@ -520,13 +520,47 @@ body.dark-mode #menu-toggle {
     min-height: 220px;
 }
 
-.chart-container h3 {
+.chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.chart-header h3 {
     font-size: 12px;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 1px;
     color: #666;
-    margin-bottom: 15px;
+    margin: 0;
+    min-width: 120px;
+    text-align: center;
+}
+
+.period-nav-btn {
+    background: rgba(0,0,0,0.1);
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 18px;
+    color: #666;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, opacity 0.2s;
+}
+
+.period-nav-btn:hover {
+    background: rgba(0,0,0,0.15);
+}
+
+.period-nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
 }
 
 .chart-container canvas {
@@ -986,8 +1020,18 @@ body.dark-mode .chart-container {
     background: rgba(255, 255, 255, 0.08);
 }
 
-body.dark-mode .chart-container h3 {
+body.dark-mode .chart-container h3,
+body.dark-mode .chart-header h3 {
     color: #aaa;
+}
+
+body.dark-mode .period-nav-btn {
+    background: rgba(255, 255, 255, 0.15);
+    color: #aaa;
+}
+
+body.dark-mode .period-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
 }
 
 /* Dark mode modals */
