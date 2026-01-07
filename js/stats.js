@@ -126,15 +126,23 @@ class StatsView {
             const debugPanel = document.getElementById('debug-panel');
             const allSessions = this.storage.getSessions();
             
-            let debugHtml = `<strong>Sessions in storage: ${allSessions.length}</strong><br>`;
+            const now = new Date();
+            const todayStart = new Date(now);
+            todayStart.setHours(0, 0, 0, 0);
+            
+            let debugHtml = `<strong>Sessions: ${allSessions.length} | Now: ${now.toLocaleString()}</strong><br>`;
+            debugHtml += `Today starts: ${todayStart.toLocaleString()}<br><br>`;
+            
             if (allSessions.length > 0) {
-                allSessions.forEach((s, i) => {
-                    debugHtml += `#${i+1}: ${new Date(s.timestamp).toLocaleString()}<br>`;
+                // Show last 5 sessions
+                const recentSessions = allSessions.slice(-5);
+                debugHtml += '<strong>Last 5 sessions:</strong><br>';
+                recentSessions.forEach((s, i) => {
+                    const sessionDate = new Date(s.timestamp);
+                    const isToday = s.timestamp >= todayStart.getTime();
+                    debugHtml += `${sessionDate.toLocaleString()} ${isToday ? '✓TODAY' : ''}<br>`;
                 });
-            } else {
-                debugHtml += 'No sessions found in localStorage!<br>';
             }
-            debugHtml += `<br>Raw key: ${localStorage.getItem('murmr_sessions') ? 'EXISTS' : 'MISSING'}`;
             
             if (debugPanel) debugPanel.innerHTML = debugHtml;
             
