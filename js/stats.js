@@ -275,61 +275,112 @@ class StatsView {
         // Sort by timestamp descending (most recent first)
         allItems.sort((a, b) => b.timestamp - a.timestamp);
         
-        // Take latest 20
-        const recentItems = allItems.slice(0, 20);
-        
-        if (recentItems.length === 0) {
+        if (allItems.length === 0) {
             container.innerHTML = '<div class="logs-empty">No history yet</div>';
             return;
         }
         
-        container.innerHTML = recentItems.map(item => {
+        // Group items by day
+        const groupedByDay = {};
+        allItems.forEach(item => {
             const date = new Date(item.timestamp);
-            const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-            
-            if (item.type === 'session') {
-                return `
-                    <div class="log-item log-session" data-type="session" data-index="${item.originalIndex}">
-                        <div class="log-item-content">
-                            <div class="log-item-info">
-                                <span class="log-item-date">${dateStr}</span>
-                                <span class="log-item-time">${timeStr}</span>
-                            </div>
-                            <span class="log-item-value log-type-session">
-                                <span class="icon pixel-smoke"></span>
-                                Session
-                            </span>
-                        </div>
-                        <div class="log-item-actions">
-                            <div class="log-item-edit">Edit</div>
-                            <div class="log-item-delete">Delete</div>
-                        </div>
-                    </div>
-                `;
-            } else {
-                return `
-                    <div class="log-item log-expense" data-type="expense" data-index="${item.originalIndex}">
-                        <div class="log-item-content">
-                            <div class="log-item-info">
-                                <span class="log-item-date">${dateStr}</span>
-                                <span class="log-item-time">${timeStr}${item.note ? ' · ' + item.note : ''}</span>
-                            </div>
-                            <span class="log-item-value log-type-expense">
-                                <span class="icon pixel-coin"></span>
-                                $${item.amount.toFixed(2)}
-                            </span>
-                        </div>
-                        <div class="log-item-actions">
-                            <div class="log-item-edit">Edit</div>
-                            <div class="log-item-delete">Delete</div>
-                        </div>
-                    </div>
-                `;
+            const dayKey = date.toDateString(); // e.g., "Sun Jan 11 2026"
+            if (!groupedByDay[dayKey]) {
+                groupedByDay[dayKey] = [];
             }
+            groupedByDay[dayKey].push(item);
+        });
+        
+        // Convert to array and take recent days
+        const dayKeys = Object.keys(groupedByDay).slice(0, 14); // Last 14 days with activity
+        
+        container.innerHTML = dayKeys.map(dayKey => {
+            const items = groupedByDay[dayKey];
+            const date = new Date(items[0].timestamp);
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            let dateLabel;
+            if (date.toDateString() === today.toDateString()) {
+                dateLabel = 'Today';
+            } else if (date.toDateString() === yesterday.toDateString()) {
+                dateLabel = 'Yesterday';
+            } else {
+                dateLabel = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            }
+            
+            const sessionCount = items.filter(i => i.type === 'session').length;
+            const expenseTotal = items.filter(i => i.type === 'expense').reduce((sum, e) => sum + e.amount, 0);
+            
+            let summary = [];
+            if (sessionCount > 0) summary.push(`${sessionCount} session${sessionCount > 1 ? 's' : ''}`);
+            if (expenseTotal > 0) summary.push(`$${expenseTotal.toFixed(2)}`);
+            
+            const itemsHtml = items.map(item => {
+                const time = new Date(item.timestamp);
+                const timeStr = time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                
+                if (item.type === 'session') {
+                    return `
+                        <div class="log-item log-session" data-type="session" data-index="${item.originalIndex}">
+                            <div class="log-item-content">
+                                <span class="log-item-time">${timeStr}</span>
+                                <span class="log-item-value log-type-session">
+                                    <span class="icon pixel-smoke"></span>
+                                    Session
+                                </span>
+                            </div>
+                            <div class="log-item-actions">
+                                <div class="log-item-edit">Edit</div>
+                                <div class="log-item-delete">Delete</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="log-item log-expense" data-type="expense" data-index="${item.originalIndex}">
+                            <div class="log-item-content">
+                                <span class="log-item-time">${timeStr}${item.note ? ' · ' + item.note : ''}</span>
+                                <span class="log-item-value log-type-expense">
+                                    <span class="icon pixel-coin"></span>
+                                    $${item.amount.toFixed(2)}
+                                </span>
+                            </div>
+                            <div class="log-item-actions">
+                                <div class="log-item-edit">Edit</div>
+                                <div class="log-item-delete">Delete</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }).join('');
+            
+            return `
+                <div class="log-day-group" data-day="${dayKey}">
+                    <div class="log-day-header">
+                        <span class="log-day-date">${dateLabel}</span>
+                        <span class="log-day-summary">${summary.join(' · ')}</span>
+                        <span class="log-day-chevron">›</span>
+                    </div>
+                    <div class="log-day-items">
+                        ${itemsHtml}
+                    </div>
+                </div>
+            `;
         }).join('');
         
         this.bindLogItemEvents(container);
+        this.bindDayGroupEvents(container);
+    }
+    
+    bindDayGroupEvents(container) {
+        container.querySelectorAll('.log-day-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const group = header.closest('.log-day-group');
+                group.classList.toggle('expanded');
+            });
+        });
     }
     
     bindLogItemEvents(container) {

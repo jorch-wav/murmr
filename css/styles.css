@@ -820,7 +820,67 @@ body.dark-mode .retro-btn {
 .logs-list {
     display: flex;
     flex-direction: column;
+    gap: 12px;
+}
+
+/* Day Group Styles */
+.log-day-group {
+    background: rgba(255,255,255,0.4);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.log-day-header {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    cursor: pointer;
     gap: 8px;
+}
+
+.log-day-date {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+}
+
+.log-day-summary {
+    flex: 1;
+    font-size: 13px;
+    color: #666;
+    text-align: right;
+    margin-right: 8px;
+}
+
+.log-day-chevron {
+    font-size: 18px;
+    color: #999;
+    transition: transform 0.2s ease;
+}
+
+.log-day-group.expanded .log-day-chevron {
+    transform: rotate(90deg);
+}
+
+.log-day-items {
+    display: none;
+    flex-direction: column;
+    gap: 1px;
+    background: rgba(0,0,0,0.05);
+    padding: 0 1px 1px;
+}
+
+.log-day-group.expanded .log-day-items {
+    display: flex;
+}
+
+.log-day-items .log-item {
+    border-radius: 0;
+    background: rgba(255,255,255,0.7);
+}
+
+.log-day-items .log-item:last-child {
+    border-radius: 0 0 11px 11px;
 }
 
 .log-item {
@@ -933,6 +993,34 @@ body.dark-mode .logs-section {
 
 body.dark-mode .logs-section h3 {
     color: #aaa;
+}
+
+body.dark-mode .log-day-group {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .log-day-header {
+    background: transparent;
+}
+
+body.dark-mode .log-day-date {
+    color: #fff;
+}
+
+body.dark-mode .log-day-summary {
+    color: #888;
+}
+
+body.dark-mode .log-day-chevron {
+    color: #666;
+}
+
+body.dark-mode .log-day-items {
+    background: rgba(0,0,0,0.2);
+}
+
+body.dark-mode .log-day-items .log-item {
+    background: rgba(255, 255, 255, 0.06);
 }
 
 body.dark-mode .log-item {
