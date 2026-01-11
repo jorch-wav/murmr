@@ -1,6 +1,6 @@
 ================================================================================
 MURMR - Smoking/Spending Tracker with 3D Boids Murmuration
-Chatbot Handoff Document - January 8, 2026
+Chatbot Handoff Document - Updated January 12, 2026
 ================================================================================
 
 PROJECT OVERVIEW
@@ -11,6 +11,7 @@ user interactions. Hosted on GitHub Pages.
 
 LIVE URL: https://jorch-wav.github.io/murmr
 REPO: https://github.com/jorch-wav/murmr
+STABLE TAG: v1.0-stable (can restore with: git checkout v1.0-stable)
 
 ================================================================================
 TECH STACK
@@ -28,6 +29,7 @@ PROJECT STRUCTURE
 ├── index.html          # Main HTML - all screens in one file
 ├── sw.js               # Service worker (increment CACHE_NAME version on changes!)
 ├── manifest.json       # PWA manifest
+├── CHATBOT_CONTEXT.txt # This file - handoff documentation
 ├── css/
 │   └── styles.css      # All styles, CSS variables for themes
 ├── js/
@@ -58,8 +60,9 @@ KEY FILES EXPLAINED
    - Tabs: Day / Week / Month / Year (this.currentPeriod)
    - Period navigation with arrows (this.periodOffset: 0=current, -1=prev, etc.)
    - Chart rendering on canvas (hourly for day, daily for week/month, monthly for year)
-   - History logs with edit/delete functionality
-   - Retroactive session adding
+   - Collapsible day-grouped history (tap to expand/collapse)
+   - Retroactive session/expense adding
+   - Spending card toggle (period vs monthly view, saved to localStorage)
 
 3. boids.js - 3D MURMURATION
    - Uses GPUComputationRenderer for GPU-based simulation
@@ -99,6 +102,20 @@ Expense object:
 }
 
 ================================================================================
+STATS SCREEN LAYOUT (as of Jan 12, 2026)
+================================================================================
+- Header: "MURMR Stats" with X close button
+- Tabs: Day | Week | Month | Year
+- Stat Cards (2x2 grid):
+  - Sessions Today/Week/Month/Year (with change vs previous period)
+  - Spending (TAPPABLE - toggles between period and monthly view)
+  - Time Since Last (live updating)
+  - Longest Streak (green highlight border)
+- Chart: Bar chart showing sessions per hour/day/month
+- Retroactive buttons: Add Session / Add Expense retroactively
+- History: Collapsible day groups (tap to expand)
+
+================================================================================
 STATS PERIODS
 ================================================================================
 - 'daily': Shows hourly chart, starts at midnight today
@@ -109,9 +126,28 @@ STATS PERIODS
 Each can have offset: 0 = current, -1 = previous period, etc.
 
 ================================================================================
-IMPORTANT RECENT FIX (Jan 8, 2026)
+SPENDING CARD TOGGLE
 ================================================================================
-BUG: Stats showed 0 sessions despite data existing
+The spending card is tappable. It toggles between:
+- Period view: "Spent Today/Week/Month/Year" with change vs previous period
+- Monthly view: "Spent This Month" with change vs last month
+
+Toggle state saved to localStorage key: murmr_spending_monthly
+
+================================================================================
+HISTORY (Collapsible Day Groups)
+================================================================================
+History shows grouped by day with collapsible sections:
+- Each day shows: Date + summary (e.g., "3 sessions · $12.50")
+- Tap day header to expand/collapse
+- Expanded view shows individual sessions/expenses
+- Swipe left on items for Edit/Delete buttons
+- Shows last 14 days with activity
+
+================================================================================
+IMPORTANT BUG FIX HISTORY
+================================================================================
+BUG (Jan 8, 2026): Stats showed 0 sessions despite data existing
 CAUSE: getPeriodBoundaries() was calling Date methods on timestamp numbers
 FIX: Use `new Date(timestamp)` to convert before calling Date methods
 
@@ -124,9 +160,10 @@ The helper functions getStartOfWeek(), getStartOfMonth(), etc. return TIMESTAMPS
 SERVICE WORKER CACHE
 ================================================================================
 IMPORTANT: After ANY code change, increment the cache version in sw.js:
-  const CACHE_NAME = 'murmr-v69';  // <-- increment this number
+  const CACHE_NAME = 'murmr-v77';  // <-- increment this number
 
 Then commit and push. Users need to refresh (sometimes twice) to get new version.
+Current version as of Jan 12, 2026: v77
 
 ================================================================================
 COMMON TASKS
@@ -151,14 +188,21 @@ COMMON TASKS
    - localStorage.removeItem('murmr_expenses')
    - localStorage.removeItem('murmr_streak_start')
 
+5. RESTORE TO STABLE VERSION:
+   - git checkout v1.0-stable
+
 ================================================================================
 CSS THEMING
 ================================================================================
-Main variables in :root and [data-theme="dark"]:
-  --bg-primary, --bg-secondary, --bg-tertiary
-  --text-primary, --text-secondary
-  --accent (set by accent color choice)
-  --accent-rgb (for rgba usage)
+Main variables in :root:
+  --bg-dark: #87CEEB (light blue sky)
+  --accent-green: #4ade80 (used for streak highlight)
+  --accent-red: #f87171 (used for negative changes)
+  --safe-area-top/bottom: iOS safe area insets
+
+Dark mode: body.dark-mode class applied
+  - Background becomes #000000
+  - Cards become semi-transparent white overlays
 
 ================================================================================
 BOIDS DEATH ANIMATION
@@ -177,6 +221,23 @@ GITHUB PAGES DEPLOYMENT
 - Changes typically visible within 1-2 minutes
 - Users may need to hard refresh (clear cache) to see updates
 
+================================================================================
+RECENT CHANGES LOG
+================================================================================
+Jan 8, 2026:
+- Fixed critical stats bug (Date object handling)
+- Added spending card toggle (period vs monthly)
+- Removed "Avg Between" stat card
+- Added streak highlight (green gradient border)
+- Adjusted header spacing
+
+Jan 11-12, 2026:
+- Added collapsible day-grouped history
+- History now shows summary per day with expand/collapse
+- Swipe-to-edit/delete still works on individual items
+
+================================================================================
+END OF HANDOFF DOCUMENT
 ================================================================================
 USER'S CURRENT DATA (as of Jan 8, 2026)
 ================================================================================
